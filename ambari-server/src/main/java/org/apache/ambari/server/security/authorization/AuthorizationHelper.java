@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Singleton;
 
 import org.apache.ambari.server.AmbariException;
+import org.apache.ambari.server.orm.dao.ClusterDAO;
 import org.apache.ambari.server.orm.dao.ViewInstanceDAO;
 import org.apache.ambari.server.orm.entities.PermissionEntity;
 import org.apache.ambari.server.orm.entities.PrivilegeEntity;
@@ -42,15 +43,6 @@ import java.util.*;
  */
 public class AuthorizationHelper {
   private final static Logger LOG = LoggerFactory.getLogger(AuthorizationHelper.class);
-
-  private static Clusters clusters;
-
-  private static ViewInstanceDAO viewInstanceDAO;
-
-  public static void init(Clusters clusters, ViewInstanceDAO viewInstanceDAO) {
-    AuthorizationHelper.clusters = clusters;
-    AuthorizationHelper.viewInstanceDAO = viewInstanceDAO;
-  }
 
   /**
    * Converts collection of RoleEntities to collection of GrantedAuthorities
@@ -263,47 +255,6 @@ public class AuthorizationHelper {
   public static Authentication getAuthentication() {
     SecurityContext context = SecurityContextHolder.getContext();
     return (context == null) ? null : context.getAuthentication();
-  }
-
-  /**
-   * Retrieve permission labels based on the details of the authenticated user
-   * @param authentication the authenticated user and associated access privileges
-   * @return human-readable permissions
-   */
-  public static Map<String,List<String>> getPermissionLabels(Authentication authentication) {
-    Map<String,List<String>> permissionLabels = new HashMap<>();
-    if (authentication.getAuthorities() != null) {
-      for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
-        AmbariGrantedAuthority ambariGrantedAuthority = (AmbariGrantedAuthority) grantedAuthority;
-
-        PrivilegeEntity privilegeEntity = ambariGrantedAuthority.getPrivilegeEntity();
-
-        String key = null;
-        try {
-          switch(privilegeEntity.getResource().getResourceType().getName()) {
-            case "CLUSTER":
-              key = clusters.getClusterById(privilegeEntity.getResource().getResourceType().getId()).getClusterName();
-              break;
-            case "AMBARI":
-              key = "Ambari";
-              break;
-            default:
-              key = viewInstanceDAO.findByResourceId(privilegeEntity.getResource().getId()).getLabel();
-              break;
-          }
-        } catch (Throwable ignored) {
-
-        }
-
-        if(key != null) {
-          if(!permissionLabels.containsKey(key)) {
-            permissionLabels.put(key, new LinkedList<String>());
-          }
-          permissionLabels.get(key).add(privilegeEntity.getPermission().getPermissionLabel());
-        }
-      }
-    }
-    return permissionLabels;
   }
 
   /**
