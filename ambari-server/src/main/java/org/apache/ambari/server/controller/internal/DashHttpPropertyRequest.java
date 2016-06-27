@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class DashHttpPropertyRequest extends JsonHttpPropertyRequest {
 
-  private static String DashApplicationsUrl = "http://cn008.l42scl.hortonworks.com:9191/services/v1/applications";
+  private static String DashApplicationsUrl = "http://localhost:9191/services/v1/applications";
 
   /**
    * Create a property request.

@@ -190,7 +190,7 @@ public class Configuration {
   public static final String LDAP_GROUP_MEMEBERSHIP_ATTR_KEY = "authentication.ldap.groupMembershipAttr";
   public static final String LDAP_ADMIN_GROUP_MAPPING_RULES_KEY = "authorization.ldap.adminGroupMappingRules";
   public static final String YARN_DASH_API_ENDPOINT = "yarn.dash.api.endpoint";
-  public static final String YARN_DASH_API_ENDPOINT_DEFAULT = "http://cn008.l42scl.hortonworks.com:9191/services/v1/applications";
+  public static final String YARN_DASH_API_ENDPOINT_DEFAULT = "http://localhost:9191/services/v1/applications";
 
   /**
    * When authentication through LDAP is enabled then Ambari Server uses this filter to lookup
