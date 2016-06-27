@@ -223,7 +223,7 @@ public class UpgradeResourceProviderTest {
     clusters.mapHostToCluster("h1", "c1");
 
     // add a single ZK server
-    Service service = cluster.addService("ZOOKEEPER");
+    Service service = cluster.addService("ZOOKEEPER", "ZOOKEEPER", "CORE");
     service.setDesiredStackVersion(cluster.getDesiredStackVersion());
     service.persist();
 
@@ -713,7 +713,7 @@ public class UpgradeResourceProviderTest {
     Cluster cluster = clusters.getCluster("c1");
 
     // add additional service for the test
-    Service service = cluster.addService("HIVE");
+    Service service = cluster.addService("HIVE", "HIVE", "CORE");
     service.setDesiredStackVersion(cluster.getDesiredStackVersion());
     service.persist();
 

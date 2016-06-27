@@ -37,11 +37,11 @@ public class ServiceComponentInstalledEvent extends ServiceEvent {
    * @param hostName
    */
   public ServiceComponentInstalledEvent(long clusterId, String stackName,
-      String stackVersion, String serviceName, String componentName,
+      String stackVersion, String serviceName, String stackServiceName, String serviceGroupName, String componentName,
       String hostName, boolean recoveryEnabled) {
     super(AmbariEventType.SERVICE_COMPONENT_INSTALL_SUCCESS, clusterId,
         stackName,
-        stackVersion, serviceName);
+        stackVersion, serviceName, stackServiceName, serviceGroupName);
 
     m_componentName = componentName;
     m_hostName = hostName;

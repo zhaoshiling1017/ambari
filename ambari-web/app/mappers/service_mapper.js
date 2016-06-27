@@ -23,7 +23,10 @@ App.serviceMapper = App.QuickDataMapper.create({
   config: {
     id: 'ServiceInfo.service_name',
     service_name: 'ServiceInfo.service_name',
-    work_status: 'ServiceInfo.state'
+    work_status: 'ServiceInfo.state',
+    stack_service_name: 'ServiceInfo.stack_service_name',
+    service_group_name: 'ServiceInfo.service_group_name',
+    service_group_id: 'ServiceInfo.service_group_name'
   },
   initialAppLoad: false,
   passiveStateMap: {},
@@ -41,7 +44,10 @@ App.serviceMapper = App.QuickDataMapper.create({
         var serviceData = {
           ServiceInfo: {
             service_name: service.ServiceInfo.service_name,
-            state: service.ServiceInfo.state
+            state: service.ServiceInfo.state,
+            stack_service_name: service.ServiceInfo.stack_service_name,
+            service_group_name: service.ServiceInfo.service_group_name,
+            service_group_id: service.ServiceInfo.service_group_name
           },
           host_components: [],
           components: []
@@ -56,7 +62,7 @@ App.serviceMapper = App.QuickDataMapper.create({
         App.serviceMetricsMapper.mapExtendedModel(item);
         return self.parseIt(item, self.get('config'));
       });
-      parsedCacheServices = misc.sortByOrder(App.StackService.find().mapProperty('serviceName'), parsedCacheServices);
+      parsedCacheServices = misc.sortByOrder(App.StackService.find().mapProperty('serviceName'), parsedCacheServices, 'stack_service_name');
       App.store.loadMany(this.get('model'), parsedCacheServices);
       App.store.commit();
       this.set('initialAppLoad', true);

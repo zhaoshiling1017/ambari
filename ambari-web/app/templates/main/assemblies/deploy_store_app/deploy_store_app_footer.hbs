@@ -1,0 +1,44 @@
+{{!
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+}}
+
+<div class="modal-footer">
+  {{#if view.parentView.isDeploying}}
+    <div class="row-fluid">
+      <div class="span8">
+        <div>
+          <span class="pull-left deploy-text">{{t common.deploying}}</span>
+          <span class="percent">{{view.parentView.progress}}%</span>
+        </div>
+        <div {{bindAttr class=":deploy-app-progress-bar :progress-bar"}}>
+          <div class="progress-striped active progress-info progress">
+            <div class="bar" {{bindAttr style="view.parentView.progressStyle"}}></div>
+          </div>
+        </div>
+      </div>
+      <div class="span4">
+        <button {{bindAttr class=":manage-button :btn view.parentView.primaryClass"}}
+          {{action onSecondary target="view.parentView"}}>{{t common.manage}}</button>
+      </div>
+    </div>
+  {{else}}
+    <button {{bindAttr disabled="view.parentView.disableSecondary" class=":btn view.parentView.secondaryClass"}}
+      {{action onSecondary target="view.parentView"}}>{{view.parentView.secondary}}</button>
+    <button {{bindAttr disabled="view.parentView.storeApp.someConfigurationInvalid" class=":btn view.parentView.primaryClass"}}
+      {{action onPrimary target="view.parentView"}}>{{view.parentView.primary}}</button>
+  {{/if}}
+</div>

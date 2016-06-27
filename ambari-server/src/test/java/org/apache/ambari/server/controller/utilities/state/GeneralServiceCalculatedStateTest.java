@@ -74,7 +74,7 @@ public abstract class GeneralServiceCalculatedStateTest {
     clusters.addCluster(clusterName, stack211);
     cluster = clusters.getCluster(clusterName);
 
-    service = cluster.addService(getServiceName());
+    service = cluster.addService(getServiceName(), getServiceName(), "CORE");
     service.setDesiredStackVersion(cluster.getDesiredStackVersion());
     service.persist();
 

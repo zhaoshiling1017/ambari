@@ -992,7 +992,7 @@ public class UpgradeHelperTest {
     // HBASE and PIG have service checks, but not TEZ.
     Set<String> additionalServices = new HashSet<String>() {{ add("HBASE"); add("PIG"); add("TEZ"); add("AMBARI_METRICS"); }};
     for(String service : additionalServices) {
-      c.addService(service);
+      c.addService(service, service, "CORE");
     }
 
     int numServiceChecksExpected = 0;
@@ -1190,7 +1190,7 @@ public class UpgradeHelperTest {
       clusters.addHost(hostName);
       Host host = clusters.getHost(hostName);
 
-      Map<String, String> hostAttributes = new HashMap<String, String>();
+      Map<String, String> hostAttributes = new HashMap<>();
       hostAttributes.put("os_family", "redhat");
       hostAttributes.put("os_release_version", "6");
 
@@ -1201,11 +1201,11 @@ public class UpgradeHelperTest {
     }
 
     // !!! add services
-    c.addService(serviceFactory.createNew(c, "HDFS"));
-    c.addService(serviceFactory.createNew(c, "YARN"));
-    c.addService(serviceFactory.createNew(c, "ZOOKEEPER"));
-    c.addService(serviceFactory.createNew(c, "HIVE"));
-    c.addService(serviceFactory.createNew(c, "OOZIE"));
+    c.addService(serviceFactory.createNew(c, "HDFS", "HDFS", "CORE"));
+    c.addService(serviceFactory.createNew(c, "YARN", "YARN", "CORE"));
+    c.addService(serviceFactory.createNew(c, "ZOOKEEPER", "ZOOKEEPER", "CORE"));
+    c.addService(serviceFactory.createNew(c, "HIVE", "HIVE", "CORE"));
+    c.addService(serviceFactory.createNew(c, "OOZIE", "OOZIE", "CORE"));
 
     Service s = c.getService("HDFS");
     ServiceComponent sc = s.addServiceComponent("NAMENODE");
@@ -1418,7 +1418,7 @@ public class UpgradeHelperTest {
     }
 
     // !!! add services
-    c.addService(serviceFactory.createNew(c, "HDFS"));
+    c.addService(serviceFactory.createNew(c, "HDFS", "HDFS", "CORE"));
 
     Service s = c.getService("HDFS");
     ServiceComponent sc = s.addServiceComponent("NAMENODE");
@@ -1498,7 +1498,7 @@ public class UpgradeHelperTest {
     }
 
     // !!! add services
-    c.addService(serviceFactory.createNew(c, "ZOOKEEPER"));
+    c.addService(serviceFactory.createNew(c, "ZOOKEEPER", "ZOOKEEPER", "CORE"));
 
     Service s = c.getService("ZOOKEEPER");
     ServiceComponent sc = s.addServiceComponent("ZOOKEEPER_SERVER");
@@ -1564,7 +1564,7 @@ public class UpgradeHelperTest {
     }
 
     // Add services
-    c.addService(serviceFactory.createNew(c, "HDFS"));
+    c.addService(serviceFactory.createNew(c, "HDFS", "HDFS", "CORE"));
 
     Service s = c.getService("HDFS");
     ServiceComponent sc = s.addServiceComponent("NAMENODE");

@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.GET;
@@ -57,7 +58,8 @@ public class TaskService extends BaseService {
    * @param requestId    request id
    * @param stageId      stage id
    */
-  public TaskService(String clusterName, String requestId, String stageId) {
+  public TaskService(ApiVersion apiVersion, String clusterName, String requestId, String stageId) {
+    super(apiVersion);
     m_clusterName = clusterName;
     m_requestId = requestId;
     m_stageId = stageId;

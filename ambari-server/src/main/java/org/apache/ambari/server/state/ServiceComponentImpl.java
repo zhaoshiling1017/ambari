@@ -18,16 +18,24 @@
 
 package org.apache.ambari.server.state;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.ambari.server.AmbariException;
 import org.apache.ambari.server.ObjectNotFoundException;
 import org.apache.ambari.server.ServiceComponentHostNotFoundException;
+import org.apache.ambari.server.ServiceGroupNotFoundException;
 import org.apache.ambari.server.api.services.AmbariMetaInfo;
+import org.apache.ambari.server.controller.ServiceComponentHostResponse;
 import org.apache.ambari.server.controller.ServiceComponentResponse;
 import org.apache.ambari.server.events.ServiceComponentRecoveryChangedEvent;
 import org.apache.ambari.server.events.publishers.AmbariEventPublisher;
@@ -43,6 +51,9 @@ import org.apache.ambari.server.orm.entities.HostComponentStateEntity;
 import org.apache.ambari.server.orm.entities.ServiceComponentDesiredStateEntity;
 import org.apache.ambari.server.orm.entities.StackEntity;
 import org.apache.ambari.server.state.cluster.ClusterImpl;
+import org.apache.ambari.server.configuration.Configuration;
+import org.apache.ambari.server.utils.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,7 +150,7 @@ public class ServiceComponentImpl implements ServiceComponent {
     StackId stackId = service.getDesiredStackVersion();
     try {
       ComponentInfo compInfo = ambariMetaInfo.getComponent(
-        stackId.getStackName(), stackId.getStackVersion(), service.getName(),
+        stackId.getStackName(), stackId.getStackVersion(), service.getStackServiceName(),
         componentName);
       isClientComponent = compInfo.isClient();
       isMasterComponent = compInfo.isMaster();
@@ -247,6 +258,16 @@ public class ServiceComponentImpl implements ServiceComponent {
   @Override
   public String getServiceName() {
     return service.getName();
+  }
+
+  @Override
+  public String getStackServiceName() {
+    return service.getStackServiceName();
+  }
+
+  @Override
+  public String getServiceGroupName() {
+    return service.getServiceGroupName();
   }
 
   @Override
@@ -515,6 +536,33 @@ public class ServiceComponentImpl implements ServiceComponent {
   }
 
   @Override
+  public int getDesiredCount() {
+    readWriteLock.readLock().lock();
+    try {
+      return getDesiredStateEntity().getDesiredCount();
+    } finally {
+      readWriteLock.readLock().unlock();
+    }
+  }
+
+  @Override
+  public void setDesiredCount(int desiredCount) {
+    readWriteLock.writeLock().lock();
+    try {
+      ServiceComponentDesiredStateEntity desiredStateEntity = getDesiredStateEntity();
+      if (desiredStateEntity != null) {
+        desiredStateEntity.setDesiredCount(desiredCount);
+        saveIfPersisted(desiredStateEntity);
+      } else {
+        LOG.warn("Setting a member on an entity object that may have been " +
+            "previously deleted, serviceName = " + (service != null ? service.getName() : ""));
+      }
+    } finally {
+      readWriteLock.writeLock().unlock();
+    }
+  }
+
+  @Override
   public ServiceComponentResponse convertToResponse() {
     readWriteLock.readLock().lock();
     try {
@@ -522,7 +570,7 @@ public class ServiceComponentImpl implements ServiceComponent {
       ServiceComponentResponse r = new ServiceComponentResponse(getClusterId(),
           cluster.getClusterName(), service.getName(), getName(),
           getDesiredStackVersion().getStackId(), getDesiredState().toString(),
-          getTotalCount(), getStartedCount(), getInstalledCount(),
+          getTotalCount(), getStartedCount(), getInstalledCount(), getDesiredCount(),
           isRecoveryEnabled(), displayName);
       return r;
     } finally {
@@ -799,10 +847,19 @@ public class ServiceComponentImpl implements ServiceComponent {
   }
 
   private int getSCHCountByState(State state) {
+    Cluster cluster = service.getCluster();
+    ServiceGroup sg = null;
+    try {
+      sg = cluster.getServiceGroup(getServiceGroupName());
+    } catch (ServiceGroupNotFoundException e) {
+      sg = null;
+    }
     int count = 0;
+    if(sg == null || sg.getServiceGroupType().equalsIgnoreCase("AMBARI")) {
     for (ServiceComponentHost sch : hostComponents.values()) {
-      if (sch.getState() == state) {
-        count++;
+        if (sch.getState() == state) {
+          count++;
+        }
       }
     }
     return count;
@@ -817,7 +874,18 @@ public class ServiceComponentImpl implements ServiceComponent {
   }
 
   private int getTotalCount() {
-    return hostComponents.size();
+    Cluster cluster = service.getCluster();
+    ServiceGroup sg = null;
+    try {
+      sg = cluster.getServiceGroup(getServiceGroupName());
+    } catch (ServiceGroupNotFoundException e) {
+      sg = null;
+    }
+    if(sg == null || sg.getServiceGroupType().equalsIgnoreCase("AMBARI")) {
+      return hostComponents.size();
+    } else {
+      return getDesiredCount();
+    }
   }
 
   // Refresh cached reference after ever setter
@@ -825,7 +893,6 @@ public class ServiceComponentImpl implements ServiceComponent {
     if (!isPersisted()) {
       return desiredStateEntity;
     }
-
     return serviceComponentDesiredStateDAO.findById(desiredStateEntity.getId());
   }
 }

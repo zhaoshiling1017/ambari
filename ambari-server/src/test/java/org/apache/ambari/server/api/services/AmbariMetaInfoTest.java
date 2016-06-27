@@ -1859,7 +1859,7 @@ public class AmbariMetaInfoTest {
     cluster.setDesiredStackVersion(
         new StackId(STACK_NAME_HDP, "2.0.6"));
 
-    cluster.addService("HDFS");
+    cluster.addService("HDFS", "HDFS", "CORE");
 
     metaInfo.reconcileAlertDefinitions(clusters);
 

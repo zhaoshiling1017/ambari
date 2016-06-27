@@ -420,7 +420,7 @@ public class OrmTestHelper {
       ServiceFactory serviceFactory, ServiceComponentFactory componentFactory,
       ServiceComponentHostFactory schFactory, String hostName) throws Exception {
     String serviceName = "HDFS";
-    Service service = serviceFactory.createNew(cluster, serviceName);
+    Service service = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     service.persist();
     service = cluster.getService(serviceName);
     assertNotNull(service);
@@ -465,7 +465,7 @@ public class OrmTestHelper {
       ServiceFactory serviceFactory, ServiceComponentFactory componentFactory,
       ServiceComponentHostFactory schFactory, String hostName) throws Exception {
     String serviceName = "YARN";
-    Service service = serviceFactory.createNew(cluster, serviceName);
+    Service service = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     service.persist();
     service = cluster.getService(serviceName);
     assertNotNull(service);

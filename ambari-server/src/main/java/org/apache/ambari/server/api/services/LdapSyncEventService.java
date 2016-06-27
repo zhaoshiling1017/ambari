@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.DELETE;
@@ -37,8 +38,11 @@ import java.util.Collections;
 /**
  * Service responsible for ldap sync event resource requests.
  */
-@Path("/ldap_sync_events/")
 public class LdapSyncEventService extends BaseService {
+  public LdapSyncEventService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
+
   /**
    * Handles: GET /ldap_sync_events/{eventId}
    * Get a specific view.

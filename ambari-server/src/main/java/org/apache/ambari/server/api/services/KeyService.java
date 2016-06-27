@@ -30,7 +30,6 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.Collection;
 
-@Path("/keys/")
 public class KeyService {
   private static final Logger log = LoggerFactory.getLogger(KeyService.class);
   private static PersistKeyValueImpl persistKeyVal;

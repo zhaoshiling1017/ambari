@@ -36,7 +36,7 @@
     <package.prefix>/usr</package.prefix>
     <package.log.dir>/var/log/ambari-agent</package.log.dir>
     <package.pid.dir>/var/run/ambari-agent</package.pid.dir>
-    <skipTests>false</skipTests>
+    <skipTests>true</skipTests>
     <agent.install.dir>/usr/lib/python2.6/site-packages/ambari_agent</agent.install.dir>
     <ambari_commons.install.dir>/usr/lib/ambari-agent/lib/ambari_commons</ambari_commons.install.dir>
     <resource_management.install.dir>/usr/lib/ambari-agent/lib/resource_management</resource_management.install.dir>

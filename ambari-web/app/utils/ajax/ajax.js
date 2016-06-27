@@ -2935,6 +2935,26 @@ var urls = {
   'service.components.load': {
     real: '/clusters/{clusterName}/services?fields=components&minimal_response=true',
     mock: '/data/services/components.json'
+  },
+  'service_group.get.info': {
+    real: '/clusters/{clusterName}/servicegroups?fields=*',
+    mock: '',
+    type: 'GET'
+  },
+  'service_group.change_state': {
+    real: '/clusters/{clusterName}/servicegroups/{id}',
+    mock: '',
+    format: function (data) {
+      return {
+        type: 'PUT',
+        data: JSON.stringify({
+          RequestInfo: {context: "Starting " + data.id},
+          ServiceGroupInfo: {
+            desired_state: data.state
+          }
+        })
+      }
+    }
   }
 };
 /**

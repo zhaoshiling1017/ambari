@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.apache.ambari.server.orm.entities.ViewEntity;
 import org.apache.ambari.server.orm.entities.ViewInstanceEntity;
@@ -60,7 +61,8 @@ public class ViewSubResourceService extends BaseService implements ViewResourceH
   /**
    * Construct a view sub-resource service.
    */
-  public ViewSubResourceService(Resource.Type type, ViewInstanceEntity viewInstanceDefinition) {
+  public ViewSubResourceService(ApiVersion apiVersion, Resource.Type type, ViewInstanceEntity viewInstanceDefinition) {
+    super(apiVersion);
     ViewEntity viewEntity = viewInstanceDefinition.getViewEntity();
 
     this.type         = type;

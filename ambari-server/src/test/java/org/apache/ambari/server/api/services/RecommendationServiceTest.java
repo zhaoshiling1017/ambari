@@ -30,6 +30,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 
 /**
  * Unit tests for RecommendationService.
@@ -41,7 +42,7 @@ public class RecommendationServiceTest extends BaseServiceTest {
     List<ServiceTestInvocation> listInvocations = new ArrayList<ServiceTestInvocation>();
 
     //getRecommendation
-    RecommendationService service = new TestRecommendationService("stackName", "stackVersion");
+    StacksService service = new TestRecommendationService("stackName", "stackVersion");
     Method m = service.getClass().getMethod("getRecommendation", String.class, HttpHeaders.class, UriInfo.class, String.class, String.class);
     Object[] args = new Object[] {"body", getHttpHeaders(), getUriInfo(), "stackName", "stackVersion"};
     listInvocations.add(new ServiceTestInvocation(Request.Type.POST, service, m, args, "body"));
@@ -49,12 +50,12 @@ public class RecommendationServiceTest extends BaseServiceTest {
     return listInvocations;
   }
 
-  private class TestRecommendationService extends RecommendationService {
+  private class TestRecommendationService extends StacksService {
     private String stackName;
     private String stackVersion;
 
     private TestRecommendationService(String stackName, String stackVersion) {
-      super();
+      super(ApiVersion.v1);
       this.stackName = stackName;
       this.stackVersion = stackVersion;
     }

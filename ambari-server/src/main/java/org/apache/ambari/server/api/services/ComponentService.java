@@ -20,6 +20,7 @@ package org.apache.ambari.server.api.services;
 
 import com.google.inject.Inject;
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.configuration.Configuration;
 import org.apache.ambari.server.controller.spi.ClusterController;
 import org.apache.ambari.server.controller.spi.Resource;
@@ -56,7 +57,8 @@ public class ComponentService extends BaseService {
    * @param clusterName cluster id
    * @param serviceName service id
    */
-  public ComponentService(String clusterName, String serviceName) {
+  public ComponentService(ApiVersion apiVersion, String clusterName, String serviceName) {
+    super(apiVersion);
     m_clusterName = clusterName;
     m_serviceName = serviceName;
   }

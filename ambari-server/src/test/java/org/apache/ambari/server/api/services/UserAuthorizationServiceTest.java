@@ -21,6 +21,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.junit.Test;
 
@@ -59,7 +60,7 @@ public class UserAuthorizationServiceTest extends BaseServiceTest {
   @Test
   public void testCreateAuthorizationResourceWithUppercaseUsername() {
     // GIVEN
-    UserAuthorizationService userAuthorizationService= new UserAuthorizationService("Jdoe");
+    UserAuthorizationService userAuthorizationService= new UserAuthorizationService(ApiVersion.v1, "Jdoe");
     // WHEN
     ResourceInstance result = userAuthorizationService.createAuthorizationResource("id");
     // THEN
@@ -71,7 +72,7 @@ public class UserAuthorizationServiceTest extends BaseServiceTest {
     private String id;
 
     private TestUserAuthorizationService(String id) {
-      super("jdoe");
+      super(ApiVersion.v1, "jdoe");
       this.id = id;
     }
 

@@ -193,6 +193,7 @@ App.UpdateController = Em.Controller.extend({
   updateAll: function () {
     if (this.get('isWorking') && !App.get('isOnlyViewUser')) {
       App.updater.run(this, 'updateServices', 'isWorking');
+      App.updater.run(this, 'updateServiceGroups', 'isWorking', App.contentUpdateInterval, '^(?!(?:\/main\/assemblies)).*'); // Polling should not happen on assemblies page
       App.updater.run(this, 'updateHost', 'isWorking');
       App.updater.run(this, 'updateServiceMetric', 'isWorking', App.componentsUpdateInterval, '\/main\/(dashboard|services).*');
       App.updater.run(this, 'updateComponentsState', 'isWorking', App.componentsUpdateInterval, '\/main\/(dashboard|services|hosts).*');
@@ -462,6 +463,7 @@ App.UpdateController = Em.Controller.extend({
       realUrl = '/components/?' + flumeHandlerParam + atsHandlerParam + haComponents +
         'ServiceComponentInfo/category=MASTER&fields=' +
         'ServiceComponentInfo/service_name,' +
+        'ServiceComponentInfo/display_name,' +
         'host_components/HostRoles/display_name,' +
         'host_components/HostRoles/host_name,' +
         'host_components/HostRoles/state,' +
@@ -524,11 +526,20 @@ App.UpdateController = Em.Controller.extend({
 
   updateServices: function (callback) {
     var testUrl = '/data/services/HDP2/services.json';
-    var componentConfigUrl = this.getUrl(testUrl, '/services?fields=ServiceInfo/state,ServiceInfo/maintenance_state,components/ServiceComponentInfo/component_name&minimal_response=true');
+    var componentConfigUrl = this.getUrl(testUrl, '/services?fields=ServiceInfo/*,components/ServiceComponentInfo/component_name&minimal_response=true');
     App.HttpClient.get(componentConfigUrl, App.serviceMapper, {
       complete: callback
     });
   },
+
+  updateServiceGroups: function (callback) {
+    var testUrl = '/';
+    var serviceGroupUrl = this.getUrl(testUrl, '/servicegroups?fields=*');
+    App.HttpClient.get(serviceGroupUrl, App.serviceGroupMapper, {
+      complete: callback
+    });
+  },
+
   updateComponentConfig: function (callback) {
     var testUrl = '/data/services/host_component_stale_configs.json';
     var componentConfigUrl = this.getUrl(testUrl, '/components?host_components/HostRoles/stale_configs=true&fields=host_components/HostRoles/display_name,host_components/HostRoles/service_name,host_components/HostRoles/state,host_components/HostRoles/maintenance_state,host_components/HostRoles/host_name,host_components/HostRoles/stale_configs,host_components/HostRoles/desired_admin_state&minimal_response=true');

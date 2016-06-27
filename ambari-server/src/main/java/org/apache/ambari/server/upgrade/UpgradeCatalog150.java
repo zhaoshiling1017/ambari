@@ -717,11 +717,13 @@ public class UpgradeCatalog150 extends AbstractUpgradeCatalog {
       List<ClusterServiceEntity> clusterServiceEntities = clusterServiceDAO.findAll();
       for (final ClusterServiceEntity clusterServiceEntity : clusterServiceEntities) {
         String serviceName = clusterServiceEntity.getServiceName();
+        String stackServiceName = clusterServiceEntity.getStackServiceName();
+        String serviceGroupName = clusterServiceEntity.getServiceGroupName();
         ServiceInfo serviceInfo = null;
         try {
-          serviceInfo = ambariMetaInfo.getService(stackName, stackVersion, serviceName);
+          serviceInfo = ambariMetaInfo.getService(stackName, stackVersion, stackServiceName);
         } catch (AmbariException e) {
-          LOG.error("Service " + serviceName + " not found for " + stackName + stackVersion);
+          LOG.error("Service " + stackServiceName + " not found for " + stackName + " " + stackVersion + " " + serviceName);
           continue;
         }
         List<String> configTypes = serviceInfo.getConfigDependencies();
@@ -812,6 +814,7 @@ public class UpgradeCatalog150 extends AbstractUpgradeCatalog {
                       HostComponentDesiredStateEntityPK entityPK =
                         new HostComponentDesiredStateEntityPK();
                       entityPK.setClusterId(clusterId);
+                      // TODO: JRL Hardcoded service names :(
                       entityPK.setServiceName("HDFS");
                       entityPK.setComponentName("DATANODE");
                       entityPK.setHostId(hostEntity.getHostId());

@@ -84,6 +84,8 @@ public class ServiceComponentDesiredStateEntity {
   @Column(name = "recovery_enabled", nullable = false, insertable = true, updatable = true)
   private Integer recoveryEnabled = 0;
 
+  @Column(name = "desired_count", nullable = false, insertable = true, updatable = true)
+  private Integer desiredCount = 0;
   /**
    * Unidirectional one-to-one association to {@link StackEntity}
    */
@@ -167,6 +169,14 @@ public class ServiceComponentDesiredStateEntity {
 
   public void setDesiredVersion(String desiredVersion) {
     this.desiredVersion = desiredVersion;
+  }
+
+  public int getDesiredCount() {
+    return desiredCount;
+  }
+
+  public void setDesiredCount(int desiredCount) {
+    this.desiredCount = desiredCount;
   }
 
   /**

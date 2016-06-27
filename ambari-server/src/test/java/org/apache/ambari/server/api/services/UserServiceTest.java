@@ -23,6 +23,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.apache.ambari.server.orm.entities.UserEntity;
 import org.junit.Test;
@@ -45,6 +46,10 @@ public class UserServiceTest {
   }
 
   class TestUserService extends UserService {
+    public TestUserService() {
+      super(ApiVersion.v1);
+    }
+
     @Override
     protected Response handleRequest(HttpHeaders headers, String body, UriInfo uriInfo,
                                      Request.Type requestType, final ResourceInstance resource) {

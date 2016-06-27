@@ -43,6 +43,8 @@ public class ServiceComponentResponse {
 
   private int installedCount;
 
+  private int desiredCount;
+
   private boolean recoveryEnabled;
 
   public ServiceComponentResponse(Long clusterId, String clusterName,
@@ -53,6 +55,7 @@ public class ServiceComponentResponse {
                                   int totalCount,
                                   int startedCount,
                                   int installedCount,
+                                  int desiredCount,
                                   boolean recoveryEnabled,
                                   String displayName) {
     super();
@@ -66,6 +69,7 @@ public class ServiceComponentResponse {
     this.totalCount = totalCount;
     this.startedCount = startedCount;
     this.installedCount = installedCount;
+    this.desiredCount = desiredCount;
     this.recoveryEnabled = recoveryEnabled;
   }
 
@@ -159,6 +163,23 @@ public class ServiceComponentResponse {
   public void setDesiredStackVersion(String desiredStackVersion) {
     this.desiredStackVersion = desiredStackVersion;
   }
+
+  /**
+   * Get the number of desired SCH's
+   * @return number of desired SCH's
+   */
+  public int getDesiredCount() {
+    return desiredCount;
+  }
+
+  /**
+   * Set the number of desired SCH's
+   * @param desiredCount
+   */
+  public void setDesiredCount(int desiredCount) {
+    this.desiredCount = desiredCount;
+  }
+
 
   /**
    * Get the component category.

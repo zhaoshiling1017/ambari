@@ -371,12 +371,16 @@ public class AmbariServer {
       // requests.
       root.addFilter(new FilterHolder(injector.getInstance(AmbariViewsSecurityHeaderFilter.class)), "/api/v1/views/*",
           DISPATCHER_TYPES);
+      root.addFilter(new FilterHolder(injector.getInstance(AmbariViewsSecurityHeaderFilter.class)), "/api/v2/views/*",
+          DISPATCHER_TYPES);
 
       // since views share the REST API threadpool, a misbehaving view could
       // consume all of the available threads and effectively cause a loss of
       // service for Ambari
       root.addFilter(new FilterHolder(injector.getInstance(ViewThrottleFilter.class)),
           "/api/v1/views/*", DISPATCHER_TYPES);
+      root.addFilter(new FilterHolder(injector.getInstance(ViewThrottleFilter.class)),
+          "/api/v2/views/*", DISPATCHER_TYPES);
 
       // session-per-request strategy for api
       root.addFilter(new FilterHolder(injector.getInstance(AmbariPersistFilter.class)), "/api/*", DISPATCHER_TYPES);
@@ -387,6 +391,7 @@ public class AmbariServer {
 
       root.addFilter(new FilterHolder(springSecurityFilter), "/api/*", DISPATCHER_TYPES);
       root.addFilter(new FilterHolder(new UserNameOverrideFilter()), "/api/v1/users/*", DISPATCHER_TYPES);
+      root.addFilter(new FilterHolder(new UserNameOverrideFilter()), "/api/v2/users/*", DISPATCHER_TYPES);
 
       // session-per-request strategy for agents
       agentroot.addFilter(new FilterHolder(injector.getInstance(AmbariPersistFilter.class)), "/agent/*", DISPATCHER_TYPES);
@@ -485,7 +490,7 @@ public class AmbariServer {
           "org.apache.ambari.server.api");
 
       sh.setInitParameter("com.sun.jersey.api.json.POJOMappingFeature", "true");
-      root.addServlet(sh, "/api/v1/*");
+      root.addServlet(sh, "/api/*");
       sh.setInitOrder(2);
 
       SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);

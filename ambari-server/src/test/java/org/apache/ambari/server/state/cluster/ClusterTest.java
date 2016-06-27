@@ -395,9 +395,9 @@ public class ClusterTest {
     }
 
     // Add Services
-    Service s1 = serviceFactory.createNew(cluster, "HDFS");
-    Service s2 = serviceFactory.createNew(cluster, "ZOOKEEPER");
-    Service s3 = serviceFactory.createNew(cluster, "GANGLIA");
+    Service s1 = serviceFactory.createNew(cluster, "HDFS", "HDFS", "CORE");
+    Service s2 = serviceFactory.createNew(cluster, "ZOOKEEPER", "ZOOKEEPER", "CORE");
+    Service s3 = serviceFactory.createNew(cluster, "GANGLIA", "GANGLIA", "CORE");
     cluster.addService(s1);
     cluster.addService(s2);
     cluster.addService(s3);
@@ -682,8 +682,8 @@ public class ClusterTest {
     // public Service getService(String serviceName) throws AmbariException;
     // public Map<String, Service> getServices();
 
-    Service s1 = serviceFactory.createNew(c1, "HDFS");
-    Service s2 = serviceFactory.createNew(c1, "MAPREDUCE");
+    Service s1 = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
+    Service s2 = serviceFactory.createNew(c1, "MAPREDUCE", "MAPREDUCE", "CORE");
 
     s1.persist();
     s2.persist();
@@ -713,7 +713,7 @@ public class ClusterTest {
     // TODO write unit tests
     // public List<ServiceComponentHost> getServiceComponentHosts(String hostname);
 
-    Service s = serviceFactory.createNew(c1, "HDFS");
+    Service s = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
     c1.addService(s);
     s.persist();
     ServiceComponent sc = serviceComponentFactory.createNew(s, "NAMENODE");
@@ -733,7 +733,7 @@ public class ClusterTest {
     try {
       while (iterator.hasNext()) {
         iterator.next();
-        Service s1 = serviceFactory.createNew(c1, "PIG");
+        Service s1 = serviceFactory.createNew(c1, "PIG", "PIG", "CORE");
         c1.addService(s1);
         s1.persist();
         ServiceComponent sc1 = serviceComponentFactory.createNew(s1, "PIG");
@@ -755,7 +755,7 @@ public class ClusterTest {
   public void testGetServiceComponentHosts_ForService() throws Exception {
     createDefaultCluster();
 
-    Service s = serviceFactory.createNew(c1, "HDFS");
+    Service s = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
     c1.addService(s);
     s.persist();
 
@@ -789,7 +789,7 @@ public class ClusterTest {
   public void testGetServiceComponentHosts_ForServiceComponent() throws Exception {
     createDefaultCluster();
 
-    Service s = serviceFactory.createNew(c1, "HDFS");
+    Service s = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
     c1.addService(s);
     s.persist();
 
@@ -829,7 +829,7 @@ public class ClusterTest {
   public void testGetServiceComponentHostMap() throws Exception {
     createDefaultCluster();
 
-    Service s = serviceFactory.createNew(c1, "HDFS");
+    Service s = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
     c1.addService(s);
     s.persist();
 
@@ -867,11 +867,11 @@ public class ClusterTest {
   public void testGetServiceComponentHostMap_ForService() throws Exception {
     createDefaultCluster();
 
-    Service sfHDFS = serviceFactory.createNew(c1, "HDFS");
+    Service sfHDFS = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
     c1.addService(sfHDFS);
     sfHDFS.persist();
 
-    Service sfMR = serviceFactory.createNew(c1, "MAPREDUCE");
+    Service sfMR = serviceFactory.createNew(c1, "MAPREDUCE", "MAPREDUCE", "CORE");
     c1.addService(sfMR);
     sfMR.persist();
 
@@ -932,11 +932,11 @@ public class ClusterTest {
   public void testGetServiceComponentHostMap_ForHost() throws Exception {
     createDefaultCluster();
 
-    Service sfHDFS = serviceFactory.createNew(c1, "HDFS");
+    Service sfHDFS = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
     c1.addService(sfHDFS);
     sfHDFS.persist();
 
-    Service sfMR = serviceFactory.createNew(c1, "MAPREDUCE");
+    Service sfMR = serviceFactory.createNew(c1, "MAPREDUCE", "MAPREDUCE", "CORE");
     c1.addService(sfMR);
     sfMR.persist();
 
@@ -998,11 +998,11 @@ public class ClusterTest {
   public void testGetServiceComponentHostMap_ForHostAndService() throws Exception {
     createDefaultCluster();
 
-    Service sfHDFS = serviceFactory.createNew(c1, "HDFS");
+    Service sfHDFS = serviceFactory.createNew(c1, "HDFS", "HDFS", "CORE");
     c1.addService(sfHDFS);
     sfHDFS.persist();
 
-    Service sfMR = serviceFactory.createNew(c1, "MAPREDUCE");
+    Service sfMR = serviceFactory.createNew(c1, "MAPREDUCE", "MAPREDUCE", "CORE");
     c1.addService(sfMR);
     sfMR.persist();
 
@@ -1205,9 +1205,9 @@ public class ClusterTest {
   public void testDeleteService() throws Exception {
     createDefaultCluster();
 
-    c1.addService("MAPREDUCE").persist();
+    c1.addService("MAPREDUCE", "MAPREDUCE", "CORE").persist();
 
-    Service hdfs = c1.addService("HDFS");
+    Service hdfs = c1.addService("HDFS", "HDFS", "CORE");
     hdfs.persist();
     ServiceComponent nameNode = hdfs.addServiceComponent("NAMENODE");
     nameNode.persist();
@@ -1228,7 +1228,7 @@ public class ClusterTest {
   public void testDeleteServiceWithConfigHistory() throws Exception {
     createDefaultCluster();
 
-    c1.addService("HDFS").persist();
+    c1.addService("HDFS", "HDFS", "CORE").persist();
 
     Config config1 = configFactory.createNew(c1, "hdfs-site",
       new HashMap<String, String>() {{ put("a", "b"); }}, new HashMap<String, Map<String,String>>());
@@ -2353,12 +2353,12 @@ public class ClusterTest {
     clusters.mapHostToCluster("h-3", clusterName);
     ClusterVersionDAOMock.failOnCurrentVersionState = false;
 
-    Service service = c1.addService("ZOOKEEPER");
+    Service service = c1.addService("ZOOKEEPER", "ZOOKEEPER", "CORE");
     ServiceComponent sc = service.addServiceComponent("ZOOKEEPER_SERVER");
     sc.addServiceComponentHost("h-1");
     sc.addServiceComponentHost("h-2");
 
-    service = c1.addService("SQOOP");
+    service = c1.addService("SQOOP", "SQOOP", "CORE");
     sc = service.addServiceComponent("SQOOP");
     sc.addServiceComponentHost("h-3");
 
@@ -2424,7 +2424,7 @@ public class ClusterTest {
 
     ClusterVersionDAOMock.failOnCurrentVersionState = false;
 
-    Service service = c1.addService("ZOOKEEPER");
+    Service service = c1.addService("ZOOKEEPER", "ZOOKEEPER", "CORE");
     ServiceComponent sc = service.addServiceComponent("ZOOKEEPER_SERVER");
     sc.addServiceComponentHost("h-1");
     sc.addServiceComponentHost("h-2");

@@ -41,6 +41,12 @@ public class ClusterServiceEntity {
   @Column(name = "service_name", nullable = false, insertable = true, updatable = true)
   private String serviceName;
 
+  @Column(name = "stack_service_name", nullable = false, insertable = true, updatable = true)
+  private String stackServiceName;
+
+  @Column(name = "service_group_name", nullable = false, insertable = true, updatable = true)
+  private String serviceGroupName;
+
   @Basic
   @Column(name = "service_enabled", nullable = false, insertable = true, updatable = true, length = 10)
   private Integer serviceEnabled = 0;
@@ -69,6 +75,22 @@ public class ClusterServiceEntity {
 
   public void setServiceName(String serviceName) {
     this.serviceName = serviceName;
+  }
+
+  public String getStackServiceName() {
+    return stackServiceName;
+  }
+
+  public void setStackServiceName(String stackServiceName) {
+    this.stackServiceName = stackServiceName;
+  }
+
+  public String getServiceGroupName() {
+    return serviceGroupName;
+  }
+
+  public void setServiceGroupName(String serviceGroupName) {
+    this.serviceGroupName = serviceGroupName;
   }
 
   public int getServiceEnabled() {

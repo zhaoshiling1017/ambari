@@ -17,7 +17,6 @@
  */
 
 var App = require('app');
-var misc = require('utils/misc');
 
 App.MainServiceController = Em.ArrayController.extend({
 
@@ -30,8 +29,13 @@ App.MainServiceController = Em.ArrayController.extend({
     if (!App.router.get('clusterController.isLoaded')) {
       return [];
     }
-    return misc.sortByOrder(App.StackService.find().mapProperty('serviceName'), App.Service.find().toArray());
+    return App.ServiceGroup.find();
   }.property('App.router.clusterController.isLoaded').volatile(),
+
+  isAllCoreServicesInstalled: function() {
+    var coreServiceGroup = this.get('content').findProperty('serviceGroupName', 'CORE');
+    return coreServiceGroup ? this.get('content').findProperty('id', 'CORE').get('isAllServicesInstalled') : false;
+  }.property('content.@each.isAllServicesInstalled'),
 
   /**
    * Current cluster
@@ -45,59 +49,15 @@ App.MainServiceController = Em.ArrayController.extend({
   }.property('App.router.clusterController.isClusterDataLoaded'),
 
   /**
-   * Check if all services are installed
-   * true - all installed, false - not all
-   * @type {bool}
-   */
-  isAllServicesInstalled: function () {
-    if (!this.get('content')) return false;
-    var availableServices = App.StackService.find().mapProperty('serviceName');
-    return this.get('content').length == availableServices.length;
-  }.property('content.@each', 'content.length'),
-
-  /**
-   * Should "Start All"-button be disabled
-   * @type {bool}
-   */
-  isStartAllDisabled: function () {
-    if (this.get('isStartStopAllClicked') == true) {
-      return true;
-    }
-    var stoppedServices = this.get('content').filter(function (_service) {
-      return (_service.get('healthStatus') === 'red' && !App.get('services.clientOnly').contains(_service.get('serviceName')));
-    });
-    return (stoppedServices.length === 0); // all green status
-  }.property('isStartStopAllClicked', 'content.@each.healthStatus'),
-
-  /**
-   * Should "Stop All"-button be disabled
-   * @type {bool}
-   */
-  isStopAllDisabled: function () {
-    if (this.get('isStartStopAllClicked') == true) {
-      return true;
-    }
-    return !this.get('content').someProperty('healthStatus', 'green');
-  }.property('isStartStopAllClicked', 'content.@each.healthStatus'),
-
-  /**
-   * Should "Refresh All"-button be disabled
-   * @type {bool}
-   */
-  isRestartAllRequiredDisabled: Em.computed.everyBy('content', 'isRestartRequired', false),
-
-  /**
-   * @type {bool}
-   */
-  isStartStopAllClicked: Em.computed.notEqual('App.router.backgroundOperationsController.allOperationsCount', 0),
-
-  /**
    * Callback for <code>start all service</code> button
    * @return {App.ModalPopup|null}
    * @method startAllService
    */
   startAllService: function (event) {
-    return this.startStopAllService(event, 'STARTED');
+    var serviceGroup = event.context;
+    if (!serviceGroup || !serviceGroup.get('isStartAllDisabled')) {
+      return this.startStopAllService(serviceGroup, 'STARTED');
+    }
   },
 
   /**
@@ -106,59 +66,81 @@ App.MainServiceController = Em.ArrayController.extend({
    * @method stopAllService
    */
   stopAllService: function (event) {
-    return this.startStopAllService(event, 'INSTALLED');
+    var serviceGroup = event.context;
+    if (!serviceGroup || !serviceGroup.get('isStopAllDisabled')) {
+      return this.startStopAllService(serviceGroup, 'INSTALLED');
+    }
   },
 
   /**
    * Common method for "start-all", "stop-all" calls
-   * @param {object} event
+   * @param {object} serviceGroup
    * @param {string} state 'STARTED|INSTALLED'
    * @returns {App.ModalPopup|null}
    * @method startStopAllService
    */
-  startStopAllService: function(event, state) {
-    if ($(event.target).hasClass('disabled') || $(event.target.parentElement).hasClass('disabled')) {
-      return null;
-    }
+  startStopAllService: function(serviceGroup, state) {
     var self = this;
+    var _serviceGroup = serviceGroup || Em.Object.create();
+    var serviceGroupName = _serviceGroup.get('serviceGroupName');
+    var isCoreServiceGroup = serviceGroupName === 'CORE';
+    var confirmStopMsg, confirmStartMsg;
+    if (serviceGroupName === 'CORE') {
+      confirmStopMsg = Em.I18n.t('services.service.core.stopAll.confirmMsg');
+      confirmStartMsg = Em.I18n.t('services.service.core.startAll.confirmMsg');
+    } else {
+      if(serviceGroupName) {
+        confirmStopMsg = Em.I18n.t('services.service.stopAll.confirmMsg');
+        confirmStartMsg = Em.I18n.t('services.service.startAll.confirmMsg');
+      }
+      else {
+        confirmStopMsg = Em.I18n.t('services.service.cluster.stopAll.confirmMsg');
+        confirmStartMsg = Em.I18n.t('services.service.cluster.startAll.confirmMsg');
+      }
+    }
     var bodyMessage = Em.Object.create({
-      confirmMsg: state == 'INSTALLED' ? Em.I18n.t('services.service.stopAll.confirmMsg') : Em.I18n.t('services.service.startAll.confirmMsg'),
-      confirmButton: state == 'INSTALLED' ? Em.I18n.t('services.service.stop.confirmButton') : Em.I18n.t('services.service.start.confirmButton')
+      confirmMsg: state === 'INSTALLED' ? confirmStopMsg.format(serviceGroupName) : confirmStartMsg.format(serviceGroupName),
+      confirmButton: state === 'INSTALLED' ? Em.I18n.t('services.service.stop.confirmButton') : Em.I18n.t('services.service.start.confirmButton')
     });
 
-    if (state == 'INSTALLED' && App.Service.find().filterProperty('serviceName', 'HDFS').someProperty('workStatus', App.HostComponentStatus.started)) {
-      App.router.get('mainServiceItemController').checkNnLastCheckpointTime(function () {
+    if (isCoreServiceGroup && state === 'INSTALLED' && App.Service.find().filterProperty('serviceName', 'HDFS').someProperty('workStatus', App.HostComponentStatus.started)) {
+      return App.router.get('mainServiceItemController').checkNnLastCheckpointTime(function () {
         return App.showConfirmationFeedBackPopup(function (query) {
-          self.allServicesCall(state, query);
+          self.allServicesCall(state, query, _serviceGroup);
         }, bodyMessage);
       });
-    } else {
-      return App.showConfirmationFeedBackPopup(function (query) {
-        self.allServicesCall(state, query);
-      }, bodyMessage);
     }
+    return App.showConfirmationFeedBackPopup(function (query) {
+      self.allServicesCall(state, query, _serviceGroup);
+    }, bodyMessage);
   },
 
   /**
    * Do request to server for "start|stop" all services
    * @param {string} state "STARTED|INSTALLED"
    * @param {object} query
+   * @param {object} serviceGroup
    * @method allServicesCall
    * @return {$.ajax}
    */
-  allServicesCall: function (state, query) {
-    var context = (state == 'INSTALLED') ? App.BackgroundOperationsController.CommandContexts.STOP_ALL_SERVICES :
+  allServicesCall: function (state, query, serviceGroup) {
+    var context = state === 'INSTALLED' ? App.BackgroundOperationsController.CommandContexts.STOP_ALL_SERVICES :
       App.BackgroundOperationsController.CommandContexts.START_ALL_SERVICES;
+    var services = serviceGroup.get('services') || App.Service.find();
+    var servicesList = services.mapProperty("serviceName").join(',');
+    var data = {
+      context: context,
+        ServiceInfo: {
+        state: state
+      },
+      urlParams: "ServiceInfo/service_name.in(" + servicesList + ")",
+      query: query
+    };
+
     return App.ajax.send({
       name: 'common.services.update',
       sender: this,
-      data: {
-        context: context,
-        ServiceInfo: {
-          state: state
-        },
-        query: query
-      },
+      data: data,
       success: 'allServicesCallSuccessCallback',
       error: 'allServicesCallErrorCallback'
     });
@@ -288,7 +270,7 @@ App.MainServiceController = Em.ArrayController.extend({
    * @method gotoAddService
    */
   gotoAddService: function () {
-    if (this.get('isAllServicesInstalled')) {
+    if (this.get('isAllCoreServicesInstalled')) {
       return;
     }
     App.router.get('addServiceController').setDBProperty('onClosePath', 'main.services.index');
@@ -298,9 +280,9 @@ App.MainServiceController = Em.ArrayController.extend({
   /**
    * Show confirmation popup and send request to restart all host components with stale_configs=true
    */
-  restartAllRequired: function () {
+  restartAllRequired: function (serviceGroup) {
     var self = this;
-    if (!this.get('isRestartAllRequiredDisabled')) {
+    if (!serviceGroup.get('isRestartAllRequiredDisabled')) {
       return App.showConfirmationPopup(function () {
             self.restartHostComponents();
           }, Em.I18n.t('services.service.refreshAll.confirmMsg').format(

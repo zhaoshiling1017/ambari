@@ -131,6 +131,7 @@ public class UpgradeCatalog240 extends AbstractUpgradeCatalog {
   public static final String BLUEPRINT_TABLE = "blueprint";
   public static final String VIEWINSTANCE_TABLE = "viewinstance";
   public static final String SHORT_URL_COLUMN = "short_url";
+  public static final String CLUSTER_HANDLE_COLUMN = "cluster_handle";
   protected static final String CLUSTER_VERSION_TABLE = "cluster_version";
   protected static final String HOST_VERSION_TABLE = "host_version";
 
@@ -246,6 +247,7 @@ public class UpgradeCatalog240 extends AbstractUpgradeCatalog {
     createViewUrlTableDDL();
     updateViewInstanceEntityTable();
     createRemoteClusterTable();
+    updateViewInstanceTable();
   }
 
   private void createRemoteClusterTable() throws SQLException {
@@ -341,7 +343,7 @@ public class UpgradeCatalog240 extends AbstractUpgradeCatalog {
 
   private void insertClusterInheritedPrincipal(String name) {
     PrincipalTypeEntity principalTypeEntity = new PrincipalTypeEntity();
-    principalTypeEntity.setName("ALL.CLUSTER.ADMINISTRATOR");
+    principalTypeEntity.setName(name);
     principalTypeEntity = principalTypeDAO.merge(principalTypeEntity);
 
     PrincipalEntity principalEntity = new PrincipalEntity();
@@ -2016,5 +2018,56 @@ public class UpgradeCatalog240 extends AbstractUpgradeCatalog {
    */
   private void updateTezViewProperty() throws SQLException {
     dbAccessor.executeUpdate("UPDATE viewinstanceproperty SET name = 'yarn.ats.url' where name = 'yarn.timeline-server.url'");
+  }
+
+  /**
+   *  Update view instance table's cluster_handle column to have cluster_id
+   *  instead of cluster_name
+   */
+  @Transactional
+  private void updateViewInstanceTable() throws SQLException {
+    try {
+      if (Long.class.equals(dbAccessor.getColumnClass(VIEWINSTANCE_TABLE, CLUSTER_HANDLE_COLUMN))) {
+        LOG.info(String.format("%s column is already numeric. Skipping an update of %s table.", CLUSTER_HANDLE_COLUMN, VIEWINSTANCE_TABLE));
+        return;
+      }
+    } catch (ClassNotFoundException e) {
+      LOG.warn("Cannot determine a type of " + CLUSTER_HANDLE_COLUMN + " column.");
+    }
+
+    String cluster_handle_dummy = "cluster_handle_dummy";
+
+    dbAccessor.addColumn(VIEWINSTANCE_TABLE,
+      new DBColumnInfo(cluster_handle_dummy, Long.class, null, null, true));
+
+    Statement statement = null;
+    ResultSet resultSet = null;
+
+    try {
+      statement = dbAccessor.getConnection().createStatement();
+      if (statement != null) {
+        String selectSQL = String.format("SELECT cluster_id, cluster_name FROM %s",
+          CLUSTER_TABLE);
+
+        resultSet = statement.executeQuery(selectSQL);
+        while (null != resultSet && resultSet.next()) {
+          final Long clusterId = resultSet.getLong("cluster_id");
+          final String clusterName = resultSet.getString("cluster_name");
+
+          String updateSQL = String.format(
+            "UPDATE %s SET %s = %d WHERE cluster_handle = '%s'",
+            VIEWINSTANCE_TABLE, cluster_handle_dummy, clusterId, clusterName);
+
+          dbAccessor.executeQuery(updateSQL);
+        }
+      }
+    } finally {
+      JdbcUtils.closeResultSet(resultSet);
+      JdbcUtils.closeStatement(statement);
+    }
+
+    dbAccessor.dropColumn(VIEWINSTANCE_TABLE, CLUSTER_HANDLE_COLUMN);
+    dbAccessor.renameColumn(VIEWINSTANCE_TABLE, cluster_handle_dummy,
+      new DBColumnInfo(CLUSTER_HANDLE_COLUMN, Long.class, null, null, true));
   }
 }

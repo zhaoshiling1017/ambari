@@ -21,6 +21,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource.Type;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -84,7 +85,7 @@ public class MemberServiceTest extends BaseServiceTest {
 
   private class TestMemberService extends MemberService {
     public TestMemberService(String groupName) {
-      super(groupName);
+      super(ApiVersion.v1, groupName);
     }
 
     @Override

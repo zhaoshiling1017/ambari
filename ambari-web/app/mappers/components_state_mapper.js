@@ -24,7 +24,7 @@ App.componentsStateMapper = App.QuickDataMapper.create({
 
   clientModel: App.ClientComponent,
   clientMap: {
-    id: 'ServiceComponentInfo.component_name',
+    id: 'ServiceComponentInfo.id',
     service_id: 'ServiceComponentInfo.service_name',
     stack_info_id: 'ServiceComponentInfo.component_name',
     component_name: 'ServiceComponentInfo.component_name',
@@ -167,6 +167,7 @@ App.componentsStateMapper = App.QuickDataMapper.create({
 
     if (json.items) {
       json.items.forEach(function (item) {
+        item.ServiceComponentInfo.id =  item.ServiceComponentInfo.service_name + '_' + item.ServiceComponentInfo.component_name;
         var componentConfig = this.getComponentConfig(item.ServiceComponentInfo.component_name);
         var parsedItem = this.parseIt(item, componentConfig);
         var service = App.Service.find(item.ServiceComponentInfo.service_name);
@@ -185,9 +186,15 @@ App.componentsStateMapper = App.QuickDataMapper.create({
           masters.push(this.parseIt(item, this.clientMap));
         }
         if (cacheService) {
-          cacheService.client_components = clients.filterProperty('service_name', cacheService.ServiceInfo.service_name).mapProperty('component_name');
-          cacheService.slave_components = slaves.filterProperty('service_name', cacheService.ServiceInfo.service_name).mapProperty('component_name');
-          cacheService.master_components = masters.filterProperty('service_name', cacheService.ServiceInfo.service_name).mapProperty('component_name');
+          cacheService.client_components = clients.filterProperty('service_name', cacheService.ServiceInfo.service_name).map(function(item){
+            return cacheService.ServiceInfo.service_name + '_' + item.component_name;
+          });
+          cacheService.slave_components = slaves.filterProperty('service_name', cacheService.ServiceInfo.service_name).map(function(item){
+            return cacheService.ServiceInfo.service_name + '_' + item.component_name;
+          });
+          cacheService.master_components = masters.filterProperty('service_name', cacheService.ServiceInfo.service_name).map(function(item){
+            return cacheService.ServiceInfo.service_name + '_' + item.component_name;
+          });
           for (var i in parsedItem) {
             if (service.get('isLoaded')) {
               cacheService[i] = parsedItem[i];

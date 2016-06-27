@@ -110,13 +110,16 @@ public class ServiceImpl implements Service {
   }
 
   @AssistedInject
-  public ServiceImpl(@Assisted Cluster cluster, @Assisted String serviceName,
+  public ServiceImpl(@Assisted Cluster cluster, @Assisted("serviceName") String serviceName,
+      @Assisted("stackServiceName") String stackServiceName, @Assisted("serviceGroupName") String serviceGroupName,
       Injector injector) throws AmbariException {
     injector.injectMembers(this);
     clusterGlobalLock = cluster.getClusterGlobalLock();
     serviceEntity = new ClusterServiceEntity();
     serviceEntity.setClusterId(cluster.getClusterId());
     serviceEntity.setServiceName(serviceName);
+    serviceEntity.setStackServiceName(stackServiceName);
+    serviceEntity.setServiceGroupName(serviceGroupName);
     serviceDesiredStateEntity = new ServiceDesiredStateEntity();
     serviceDesiredStateEntity.setServiceName(serviceName);
     serviceDesiredStateEntity.setClusterId(cluster.getClusterId());
@@ -135,7 +138,7 @@ public class ServiceImpl implements Service {
     setDesiredStackVersion(stackId);
 
     ServiceInfo sInfo = ambariMetaInfo.getService(stackId.getStackName(),
-        stackId.getStackVersion(), serviceName);
+        stackId.getStackVersion(), stackServiceName);
     isClientOnlyService = sInfo.isClientOnlyService();
 
     init();
@@ -165,9 +168,11 @@ public class ServiceImpl implements Service {
                     serviceComponentDesiredStateEntity));
           } catch(ProvisionException ex) {
             StackId stackId = cluster.getCurrentStackVersion();
-            LOG.error(String.format("Can not get component info: stackName=%s, stackVersion=%s, serviceName=%s, componentName=%s",
+            LOG.error(String.format("Can not get component info: stackName=%s, stackVersion=%s, serviceName=%s, " +
+                "stackServiceName=%s, componentName=%s",
                 stackId.getStackName(), stackId.getStackVersion(),
-                serviceEntity.getServiceName(),serviceComponentDesiredStateEntity.getComponentName()));
+                serviceEntity.getServiceName(), serviceEntity.getStackServiceName(),
+                serviceComponentDesiredStateEntity.getComponentName()));
             ex.printStackTrace();
           }
       }
@@ -175,7 +180,7 @@ public class ServiceImpl implements Service {
 
     StackId stackId = getDesiredStackVersion();
     ServiceInfo sInfo = ambariMetaInfo.getService(stackId.getStackName(),
-        stackId.getStackVersion(), getName());
+        stackId.getStackVersion(), getStackServiceName());
     isClientOnlyService = sInfo.isClientOnlyService();
 
     persisted = true;
@@ -189,6 +194,16 @@ public class ServiceImpl implements Service {
   @Override
   public String getName() {
     return serviceEntity.getServiceName();
+  }
+
+  @Override
+  public String getStackServiceName() {
+    return serviceEntity.getStackServiceName();
+  }
+
+  @Override
+  public String getServiceGroupName() {
+    return serviceEntity.getServiceGroupName();
   }
 
   @Override
@@ -236,6 +251,7 @@ public class ServiceImpl implements Service {
               + ", clusterName=" + cluster.getClusterName()
               + ", clusterId=" + cluster.getClusterId()
               + ", serviceName=" + getName()
+              + ", stackServiceName=" + getStackServiceName()
               + ", serviceComponentName=" + component.getName());
         }
         if (components.containsKey(component.getName())) {
@@ -243,6 +259,7 @@ public class ServiceImpl implements Service {
               + ", clusterName=" + cluster.getClusterName()
               + ", clusterId=" + cluster.getClusterId()
               + ", serviceName=" + getName()
+              + ", stackServiceName=" + getStackServiceName()
               + ", serviceComponentName=" + component.getName());
         }
         components.put(component.getName(), component);
@@ -266,6 +283,7 @@ public class ServiceImpl implements Service {
               + ", clusterName=" + cluster.getClusterName()
               + ", clusterId=" + cluster.getClusterId()
               + ", serviceName=" + getName()
+              + ", stackServiceName=" + getStackServiceName()
               + ", serviceComponentName=" + serviceComponentName);
         }
         if (components.containsKey(serviceComponentName)) {
@@ -273,6 +291,7 @@ public class ServiceImpl implements Service {
               + ", clusterName=" + cluster.getClusterName()
               + ", clusterId=" + cluster.getClusterId()
               + ", serviceName=" + getName()
+              + ", stackServiceName=" + getStackServiceName()
               + ", serviceComponentName=" + serviceComponentName);
         }
         ServiceComponent component = serviceComponentFactory.createNew(this, serviceComponentName);
@@ -293,7 +312,7 @@ public class ServiceImpl implements Service {
     try {
       if (!components.containsKey(componentName)) {
         throw new ServiceComponentNotFoundException(cluster.getClusterName(),
-            getName(), componentName);
+            getName(), getStackServiceName(), getServiceGroupName(), componentName);
       }
       return components.get(componentName);
     } finally {
@@ -318,7 +337,7 @@ public class ServiceImpl implements Service {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Setting DesiredState of Service" + ", clusterName="
             + cluster.getClusterName() + ", clusterId="
-            + cluster.getClusterId() + ", serviceName=" + getName()
+            + cluster.getClusterId() + ", serviceName=" + getName() + ", stackServiceName=" + getStackServiceName()
             + ", oldDesiredState=" + getDesiredState() + ", newDesiredState="
             + state + ", persisted = " + isPersisted());
       }
@@ -351,6 +370,7 @@ public class ServiceImpl implements Service {
         LOG.debug("Setting DesiredSecurityState of Service" + ", clusterName="
             + cluster.getClusterName() + ", clusterId="
             + cluster.getClusterId() + ", serviceName=" + getName()
+            + ", stackServiceName=" + getStackServiceName()
             + ", oldDesiredSecurityState=" + getSecurityState()
             + ", newDesiredSecurityState=" + securityState);
       }
@@ -384,6 +404,7 @@ public class ServiceImpl implements Service {
         LOG.debug("Setting DesiredStackVersion of Service" + ", clusterName="
             + cluster.getClusterName() + ", clusterId="
             + cluster.getClusterId() + ", serviceName=" + getName()
+            + ", stackServiceName=" + getStackServiceName()
             + ", oldDesiredStackVersion=" + getDesiredStackVersion()
             + ", newDesiredStackVersion=" + stack);
       }
@@ -401,7 +422,7 @@ public class ServiceImpl implements Service {
     readWriteLock.readLock().lock();
     try {
       ServiceResponse r = new ServiceResponse(cluster.getClusterId(),
-          cluster.getClusterName(), getName(),
+          cluster.getClusterName(), getName(), getStackServiceName(), getServiceGroupName(),
           getDesiredStackVersion().getStackId(), getDesiredState().toString());
 
       r.setMaintenanceState(getMaintenanceState().name());
@@ -420,7 +441,7 @@ public class ServiceImpl implements Service {
   public void debugDump(StringBuilder sb) {
     readWriteLock.readLock().lock();
     try {
-      sb.append("Service={ serviceName=" + getName() + ", clusterName="
+      sb.append("Service={ serviceName=" + getName() + "stackServiceName=" + getStackServiceName() + ", clusterName="
           + cluster.getClusterName() + ", clusterId=" + cluster.getClusterId()
           + ", desiredStackVersion=" + getDesiredStackVersion()
           + ", desiredState=" + getDesiredState().toString()
@@ -479,7 +500,7 @@ public class ServiceImpl implements Service {
 
           ServiceInstalledEvent event = new ServiceInstalledEvent(
               getClusterId(), stackId.getStackName(),
-              stackId.getStackVersion(), getName());
+              stackId.getStackVersion(), getName(), getStackServiceName(), getServiceGroupName());
 
           eventPublisher.publish(event);
         } else {
@@ -689,7 +710,7 @@ public class ServiceImpl implements Service {
           StackId stackId = cluster.getDesiredStackVersion();
 
           ServiceRemovedEvent event = new ServiceRemovedEvent(getClusterId(),
-              stackId.getStackName(), stackId.getStackVersion(), getName());
+              stackId.getStackName(), stackId.getStackVersion(), getName(), getStackServiceName(), getServiceGroupName());
 
           eventPublisher.publish(event);
         }

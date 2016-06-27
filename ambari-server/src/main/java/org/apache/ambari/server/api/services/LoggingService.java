@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.AmbariManagementController;
 import org.apache.ambari.server.controller.AmbariServer;
 import org.apache.ambari.server.controller.internal.ResourceImpl;
@@ -58,11 +59,13 @@ public class LoggingService extends BaseService {
 
   private final String clusterName;
 
-  public LoggingService(String clusterName) {
-    this(clusterName, new DefaultControllerFactory(), new LoggingRequestHelperFactoryImpl());
+  public LoggingService(ApiVersion apiVersion, String clusterName) {
+    this(apiVersion, clusterName, new DefaultControllerFactory(), new LoggingRequestHelperFactoryImpl());
   }
 
-  public LoggingService(String clusterName, ControllerFactory controllerFactory, LoggingRequestHelperFactory helperFactory) {
+  public LoggingService(ApiVersion apiVersion, String clusterName, ControllerFactory controllerFactory,
+                        LoggingRequestHelperFactory helperFactory) {
+    super(apiVersion);
     this.clusterName = clusterName;
     this.controllerFactory = controllerFactory;
     this.helperFactory = helperFactory;

@@ -194,10 +194,10 @@ public class AmbariContext {
     Set<ServiceRequest> serviceRequests = new HashSet<ServiceRequest>();
     Set<ServiceComponentRequest> componentRequests = new HashSet<ServiceComponentRequest>();
     for (String service : services) {
-      serviceRequests.add(new ServiceRequest(clusterName, service, null));
+      serviceRequests.add(new ServiceRequest(clusterName, service, service, "CORE", null));
       for (String component : topology.getBlueprint().getComponents(service)) {
         String recoveryEnabled = String.valueOf(topology.getBlueprint().isRecoveryEnabled(service, component));
-        componentRequests.add(new ServiceComponentRequest(clusterName, service, component, null, recoveryEnabled));
+        componentRequests.add(new ServiceComponentRequest(clusterName, service, component, null, null, recoveryEnabled));
       }
     }
     try {

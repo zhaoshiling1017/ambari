@@ -187,7 +187,7 @@ public class ServiceComponentHostTest {
     } catch (ServiceNotFoundException e) {
       LOG.debug("Calling service create"
           + ", serviceName=" + svc);
-      s = serviceFactory.createNew(c, svc);
+      s = serviceFactory.createNew(c, svc, svc, "CORE");
       c.addService(s);
       s.persist();
     }

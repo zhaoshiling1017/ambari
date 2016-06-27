@@ -86,6 +86,13 @@ App.Router = Em.Router.extend({
    */
   preferedPath: null,
 
+  /**
+   * @type {boolean}
+   */
+  isAppStorePageSelected: function() {
+    return this.get('currentState.path').indexOf('main.assemblies') !== -1;
+  }.property('currentState.path'),
+
   setNavigationFlow: function (step) {
     var matches = step.match(/\d+$/);
     var newStep;

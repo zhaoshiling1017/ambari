@@ -226,7 +226,7 @@ public class UpgradeResourceProviderHDP22Test {
     clusters.mapHostToCluster("h1", "c1");
 
     // add a single HIVE server
-    Service service = cluster.addService("HIVE");
+    Service service = cluster.addService("HIVE", "HIVE", "CORE");
     service.setDesiredStackVersion(cluster.getDesiredStackVersion());
     service.persist();
 

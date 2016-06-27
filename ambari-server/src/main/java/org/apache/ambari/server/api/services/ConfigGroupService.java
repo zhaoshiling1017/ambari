@@ -18,6 +18,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.DELETE;
@@ -47,7 +48,8 @@ public class ConfigGroupService extends BaseService {
    * Constructor
    * @param m_clusterName
    */
-  public ConfigGroupService(String m_clusterName) {
+  public ConfigGroupService(ApiVersion apiVersion, String m_clusterName) {
+    super(apiVersion);
     this.m_clusterName = m_clusterName;
   }
 

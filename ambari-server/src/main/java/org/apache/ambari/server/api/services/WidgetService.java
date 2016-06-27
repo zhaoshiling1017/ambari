@@ -19,6 +19,7 @@ package org.apache.ambari.server.api.services;
 
 import com.sun.jersey.core.util.Base64;
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.apache.ambari.server.security.authorization.AuthorizationHelper;
 
@@ -39,7 +40,8 @@ public class WidgetService extends BaseService {
 
   private final String clusterName;
 
-  public WidgetService(String clusterName) {
+  public WidgetService(ApiVersion apiVersion, String clusterName) {
+    super(apiVersion);
     this.clusterName = clusterName;
   }
 

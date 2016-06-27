@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.DELETE;
@@ -37,8 +38,11 @@ import java.util.Collections;
 /**
  * DR target cluster service.
  */
-@Path("/targets/")
 public class TargetClusterService extends BaseService {
+
+  public TargetClusterService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
 
   /**
    * Handles: GET /targets/{targetName}

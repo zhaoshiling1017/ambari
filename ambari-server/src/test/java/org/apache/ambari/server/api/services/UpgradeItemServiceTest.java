@@ -21,6 +21,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.junit.Assert;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -49,7 +50,7 @@ public class UpgradeItemServiceTest extends BaseServiceTest {
     private Long m_upgradeItemId;
 
     private TestUpgradeItemService(String clusterName, String upgradeId, String upgradeGroupId, Long upgradeItemId) {
-      super(clusterName, upgradeId, upgradeGroupId);
+      super(ApiVersion.v1, clusterName, upgradeId, upgradeGroupId);
 
       m_upgradeItemId = upgradeItemId;
     }

@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.DELETE;
@@ -38,8 +39,11 @@ import java.util.Collections;
 /**
  * Service responsible for action definition resource requests.
  */
-@Path("/actions/")
 public class ActionService extends BaseService {
+
+  public ActionService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
 
   /**
    * Handles: GET /actions/{actionName}

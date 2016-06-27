@@ -20,5 +20,11 @@ var App = require('app');
 
 App.MainDashboardController = Em.Controller.extend({
   name: 'mainDashboardController',
-  categorySelected: 'widgets'
+  categorySelected: 'widgets',
+  coreServiceGroup: function() {
+    if (!App.router.get('clusterController.isLoaded')) {
+      return {};
+    }
+    return App.ServiceGroup.find().findProperty('serviceGroupName', 'CORE');
+  }.property('App.router.clusterController.isLoaded')
 });

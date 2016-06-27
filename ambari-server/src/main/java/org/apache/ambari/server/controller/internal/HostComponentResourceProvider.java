@@ -89,6 +89,10 @@ public class HostComponentResourceProvider extends AbstractControllerResourcePro
       = PropertyHelper.getPropertyId("HostRoles", "display_name");
   public static final String HOST_COMPONENT_HOST_NAME_PROPERTY_ID
       = PropertyHelper.getPropertyId("HostRoles", "host_name");
+  public static final String HOST_COMPONENT_BARE_HOST_NAME_PROPERTY_ID
+      = PropertyHelper.getPropertyId("HostRoles", "bare_host_name");
+  public static final String HOST_COMPONENT_CONTAINER_NAME_PROPERTY_ID
+      = PropertyHelper.getPropertyId("HostRoles", "container_name");
   public static final String HOST_COMPONENT_STATE_PROPERTY_ID
       = PropertyHelper.getPropertyId("HostRoles", "state");
   public static final String HOST_COMPONENT_DESIRED_STATE_PROPERTY_ID
@@ -227,6 +231,10 @@ public class HostComponentResourceProvider extends AbstractControllerResourcePro
               response.getDisplayName(), requestedIds);
       setResourceProperty(resource, HOST_COMPONENT_HOST_NAME_PROPERTY_ID,
               response.getHostname(), requestedIds);
+      setResourceProperty(resource, HOST_COMPONENT_BARE_HOST_NAME_PROPERTY_ID,
+          response.getBareHostName(), requestedIds);
+      setResourceProperty(resource, HOST_COMPONENT_CONTAINER_NAME_PROPERTY_ID,
+          response.getContainerName(), requestedIds);
       setResourceProperty(resource, HOST_COMPONENT_STATE_PROPERTY_ID,
               response.getLiveState(), requestedIds);
       setResourceProperty(resource, HOST_COMPONENT_DESIRED_STATE_PROPERTY_ID,

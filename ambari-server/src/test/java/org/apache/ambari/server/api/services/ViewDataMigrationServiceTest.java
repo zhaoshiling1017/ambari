@@ -18,6 +18,7 @@
 package org.apache.ambari.server.api.services;
 
 import junit.framework.Assert;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.orm.entities.ViewEntity;
 import org.apache.ambari.server.orm.entities.ViewInstanceEntity;
 import org.apache.ambari.server.view.ViewDataMigrationContextImpl;
@@ -152,7 +153,7 @@ public class ViewDataMigrationServiceTest {
     private ViewDataMigrationContextImpl migrationContext;
 
     public TestViewDataMigrationService(String viewName, String viewVersion, String instanceName) {
-      super(viewName, viewVersion, instanceName);
+      super(ApiVersion.v1, viewName, viewVersion, instanceName);
     }
 
     @Override

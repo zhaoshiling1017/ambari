@@ -119,7 +119,7 @@ public class ServiceResourceProviderTest {
     expect(managementController.getAmbariMetaInfo()).andReturn(ambariMetaInfo);
     expect(managementController.getServiceFactory()).andReturn(serviceFactory);
 
-    expect(serviceFactory.createNew(cluster, "Service100")).andReturn(service);
+    expect(serviceFactory.createNew(cluster, "Service100", "Service100", "CORE")).andReturn(service);
 
     expect(clusters.getCluster("Cluster100")).andReturn(cluster).anyTimes();
 
@@ -145,6 +145,7 @@ public class ServiceResourceProviderTest {
     // add properties to the request map
     properties.put(ServiceResourceProvider.SERVICE_CLUSTER_NAME_PROPERTY_ID, "Cluster100");
     properties.put(ServiceResourceProvider.SERVICE_SERVICE_NAME_PROPERTY_ID, "Service100");
+    properties.put(ServiceResourceProvider.SERVICE_STACK_SERVICE_NAME_PROPERTY_ID, "Service100");
     properties.put(ServiceResourceProvider.SERVICE_SERVICE_STATE_PROPERTY_ID, "INIT");
 
     propertySet.add(properties);
@@ -254,6 +255,7 @@ public class ServiceResourceProviderTest {
 
     propertyIds.add(ServiceResourceProvider.SERVICE_CLUSTER_NAME_PROPERTY_ID);
     propertyIds.add(ServiceResourceProvider.SERVICE_SERVICE_NAME_PROPERTY_ID);
+    propertyIds.add(ServiceResourceProvider.SERVICE_STACK_SERVICE_NAME_PROPERTY_ID);
 
     // create the request
     Predicate predicate = new PredicateBuilder().property(ServiceResourceProvider.SERVICE_CLUSTER_NAME_PROPERTY_ID).equals("Cluster100").toPredicate();

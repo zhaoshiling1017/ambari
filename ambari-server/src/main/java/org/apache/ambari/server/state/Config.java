@@ -38,6 +38,11 @@ public interface Config {
   public String getType();
 
   /**
+   * @return Stack Config Type
+   */
+  public String getStackType();
+
+  /**
    * @return Version Tag this config instance is mapped to
    */
   public String getTag();

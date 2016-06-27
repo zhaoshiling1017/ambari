@@ -22,6 +22,7 @@ import junit.framework.Assert;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource.Type;
 import org.easymock.EasyMock;
 import org.junit.Test;
@@ -83,7 +84,7 @@ public class GroupPrivilegeServiceTest extends BaseServiceTest {
   private class TestGroupPrivilegeService extends GroupPrivilegeService {
 
     public TestGroupPrivilegeService() {
-      super("group");
+      super(ApiVersion.v1, "group");
     }
 
     @Override

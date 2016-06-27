@@ -47,6 +47,7 @@ import org.apache.ambari.server.api.services.stackadvisor.StackAdvisorRequestExc
 import org.apache.ambari.server.api.services.stackadvisor.StackAdvisorResponse;
 import org.apache.ambari.server.api.services.stackadvisor.StackAdvisorRunner;
 import org.apache.ambari.server.api.services.stackadvisor.commands.StackAdvisorCommand.StackAdvisorData;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -261,7 +262,7 @@ public class StackAdvisorCommandTest {
   class TestStackAdvisorCommand extends StackAdvisorCommand<TestResource> {
     public TestStackAdvisorCommand(File recommendationsDir, String stackAdvisorScript,
         int requestId, StackAdvisorRunner saRunner, AmbariMetaInfo metaInfo) {
-      super(recommendationsDir, stackAdvisorScript, requestId, saRunner, metaInfo);
+      super(ApiVersion.v1, recommendationsDir, stackAdvisorScript, requestId, saRunner, metaInfo);
     }
 
     @Override

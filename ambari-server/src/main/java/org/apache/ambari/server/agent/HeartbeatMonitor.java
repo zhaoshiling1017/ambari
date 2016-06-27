@@ -236,13 +236,15 @@ public class HeartbeatMonitor implements Runnable {
   private StatusCommand createStatusCommand(String hostname, Cluster cluster,
                                ServiceComponentHost sch) throws AmbariException {
     String serviceName = sch.getServiceName();
+    String stackServiceName = sch.getStackServiceName();
+    String serviceGroupName = sch.getServiceGroupName();
     String componentName = sch.getServiceComponentName();
     StackId stackId = cluster.getDesiredStackVersion();
     ServiceInfo serviceInfo = ambariMetaInfo.getService(stackId.getStackName(),
-        stackId.getStackVersion(), serviceName);
+        stackId.getStackVersion(), stackServiceName);
     ComponentInfo componentInfo = ambariMetaInfo.getComponent(
             stackId.getStackName(), stackId.getStackVersion(),
-            serviceName, componentName);
+        stackServiceName, componentName);
     StackInfo stackInfo = ambariMetaInfo.getStack(stackId.getStackName(),
         stackId.getStackVersion());
 
@@ -259,7 +261,7 @@ public class HeartbeatMonitor implements Runnable {
         .getEffectiveDesiredTags(cluster, hostname);
 
     for(Config clusterConfig: clusterConfigs) {
-      if(!clusterConfig.getType().endsWith("-env")) {
+      if(!clusterConfig.getType().contains("-env")) {
         continue;
       }
 

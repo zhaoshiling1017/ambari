@@ -447,7 +447,7 @@ public class ClustersTest {
     host1.addDesiredConfig(cluster.getClusterId(), true, "_test", config2);
     host1.persist();
 
-    Service hdfs = cluster.addService("HDFS");
+    Service hdfs = cluster.addService("HDFS", "HDFS", "CORE");
     hdfs.persist();
 
     Assert.assertNotNull(injector.getInstance(ClusterServiceDAO.class).findByClusterAndServiceNames(c1, "HDFS"));

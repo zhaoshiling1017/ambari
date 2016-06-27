@@ -44,6 +44,8 @@ import org.apache.ambari.server.AmbariException;
 import org.apache.ambari.server.ParentObjectNotFoundException;
 import org.apache.ambari.server.StackAccessException;
 import org.apache.ambari.server.configuration.Configuration;
+import org.apache.ambari.server.controller.AmbariManagementController;
+import org.apache.ambari.server.controller.AmbariServer;
 import org.apache.ambari.server.controller.RootServiceResponseFactory.Services;
 import org.apache.ambari.server.controller.utilities.PropertyHelper;
 import org.apache.ambari.server.customactions.ActionDefinition;
@@ -55,6 +57,7 @@ import org.apache.ambari.server.metadata.AmbariServiceAlertDefinitions;
 import org.apache.ambari.server.orm.dao.AlertDefinitionDAO;
 import org.apache.ambari.server.orm.dao.MetainfoDAO;
 import org.apache.ambari.server.orm.entities.AlertDefinitionEntity;
+import org.apache.ambari.server.orm.entities.ClusterVersionEntity;
 import org.apache.ambari.server.orm.entities.MetainfoEntity;
 import org.apache.ambari.server.stack.StackDirectory;
 import org.apache.ambari.server.stack.StackManager;
@@ -218,6 +221,8 @@ public class AmbariMetaInfo {
    */
   private StackManager stackManager;
 
+  private AmbariManagementController controller;
+
   private Configuration conf;
 
   /**
@@ -241,6 +246,7 @@ public class AmbariMetaInfo {
     serverVersionFile = new File(serverVersionFilePath);
 
     customActionRoot = new File(conf.getCustomActionDefinitionPath());
+    controller = AmbariServer.getController();
   }
 
   /**
@@ -523,14 +529,15 @@ public class AmbariMetaInfo {
   }
 
   public ServiceInfo getService(String stackName, String version, String serviceName) throws AmbariException {
-    ServiceInfo service = getStack(stackName, version).getService(serviceName);
+    StackInfo stackInfo = getStack(stackName, version);
+    ServiceInfo serviceInfo = stackInfo.getService(serviceName);
 
-    if (service == null) {
+    if (serviceInfo == null) {
       throw new StackAccessException("stackName=" + stackName + ", stackVersion=" +
                                      version + ", serviceName=" + serviceName);
     }
 
-    return service;
+    return serviceInfo;
   }
 
   public Collection<String> getMonitoringServiceNames(String stackName, String version)

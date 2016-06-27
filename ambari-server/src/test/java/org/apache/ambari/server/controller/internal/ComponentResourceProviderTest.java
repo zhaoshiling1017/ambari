@@ -231,13 +231,13 @@ public class ComponentResourceProviderTest {
     expect(service.getServiceComponents()).andReturn(serviceComponentMap).anyTimes();
 
     expect(serviceComponent1.convertToResponse()).andReturn(
-      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component100", null, "", 1, 1, 0,
+      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component100", null, "", 1, 1, 0, 0,
               true /* recovery enabled */, "Component100 Client"));
     expect(serviceComponent2.convertToResponse()).andReturn(
-      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component101", null, "", 1, 1, 0,
+      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component101", null, "", 1, 1, 0, 0,
               false /* recovery not enabled */, "Component101 Client"));
     expect(serviceComponent3.convertToResponse()).andReturn(
-      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component102", null, "", 1, 1, 0,
+      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component102", null, "", 1, 1, 0, 0,
               true /* recovery enabled */, "Component102 Client"));
 
     expect(ambariMetaInfo.getComponent((String) anyObject(),
@@ -376,13 +376,13 @@ public class ComponentResourceProviderTest {
     expect(component3Info.getCategory()).andReturn(null);
 
     expect(serviceComponent1.convertToResponse()).andReturn(
-      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component101", null, "", 1, 0, 1,
+      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component101", null, "", 1, 0, 1, 0,
               false /* recovery not enabled */, "Component101 Client"));
     expect(serviceComponent2.convertToResponse()).andReturn(
-      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component102", null, "", 1, 0, 1,
+      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component102", null, "", 1, 0, 1, 0,
               false /* recovery not enabled */, "Component102 Client"));
     expect(serviceComponent3.convertToResponse()).andReturn(
-      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component103", null, "", 1, 0, 1,
+      new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component103", null, "", 1, 0, 1, 0,
               false /* recovery not enabled */, "Component103 Client"));
     expect(serviceComponent1.getDesiredState()).andReturn(State.INSTALLED).anyTimes();
     expect(serviceComponent2.getDesiredState()).andReturn(State.INSTALLED).anyTimes();
@@ -683,7 +683,7 @@ public class ComponentResourceProviderTest {
     expect(component1Info.getCategory()).andReturn(null);
 
     expect(serviceComponent1.convertToResponse()).andReturn(
-        new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component101", null, "", 1, 0, 1,
+        new ServiceComponentResponse(100L, "Cluster100", "Service100", "Component101", null, "", 1, 0, 1, 0,
             false /* recovery not enabled */, "Component101 Client"));
     expect(serviceComponent1.getDesiredState()).andReturn(State.INSTALLED).anyTimes();
 
@@ -753,7 +753,7 @@ public class ComponentResourceProviderTest {
 
     // requests
     ServiceComponentRequest request1 = new ServiceComponentRequest("cluster1", "service1", "component1",
-        null, String.valueOf(true /* recovery enabled */));
+        null, null, String.valueOf(true /* recovery enabled */));
 
     Set<ServiceComponentRequest> setRequests = new HashSet<ServiceComponentRequest>();
     setRequests.add(request1);
@@ -813,15 +813,15 @@ public class ComponentResourceProviderTest {
 
     // requests
     ServiceComponentRequest request1 = new ServiceComponentRequest("cluster1", "service1", "component1",
-        null, String.valueOf(true /* recovery enabled */));
+        null, null, String.valueOf(true /* recovery enabled */));
     ServiceComponentRequest request2 = new ServiceComponentRequest("cluster1", "service1", "component2",
-        null, String.valueOf(true /* recovery enabled */));
+        null, null, String.valueOf(true /* recovery enabled */));
     ServiceComponentRequest request3 = new ServiceComponentRequest("cluster1", "service1", "component3",
-        null, String.valueOf(true /* recovery enabled */));
+        null, null, String.valueOf(true /* recovery enabled */));
     ServiceComponentRequest request4 = new ServiceComponentRequest("cluster1", "service1", "component4",
-        null, String.valueOf(true /* recovery enabled */));
-    ServiceComponentRequest request5 = new ServiceComponentRequest("cluster1", "service2", null, null,
-              String.valueOf(true /* recovery enabled */));
+        null, null, String.valueOf(true /* recovery enabled */));
+    ServiceComponentRequest request5 = new ServiceComponentRequest("cluster1", "service2", null, null, null,
+        String.valueOf(true /* recovery enabled */));
 
     Set<ServiceComponentRequest> setRequests = new HashSet<ServiceComponentRequest>();
     setRequests.add(request1);
@@ -851,8 +851,8 @@ public class ComponentResourceProviderTest {
     expect(component4Info.getCategory()).andReturn(null);
 
     expect(service.getName()).andReturn("service1").anyTimes();
-    expect(service.getServiceComponent("component1")).andThrow(new ServiceComponentNotFoundException("cluster1", "service1", "component1"));
-    expect(service.getServiceComponent("component2")).andThrow(new ServiceComponentNotFoundException("cluster1", "service1", "component2"));
+    expect(service.getServiceComponent("component1")).andThrow(new ServiceComponentNotFoundException("cluster1", "service1", "service1", "CORE", "component1"));
+    expect(service.getServiceComponent("component2")).andThrow(new ServiceComponentNotFoundException("cluster1", "service1", "service1", "CORE", "component2"));
     expect(service.getServiceComponent("component3")).andReturn(component1);
     expect(service.getServiceComponent("component4")).andReturn(component2);
 
@@ -905,7 +905,7 @@ public class ComponentResourceProviderTest {
 
     // requests
     ServiceComponentRequest request1 = new ServiceComponentRequest("cluster1", "service1", "component1",
-        null, String.valueOf(true /* recovery enabled */));
+        null, null, String.valueOf(true /* recovery enabled */));
 
     Set<ServiceComponentRequest> setRequests = new HashSet<ServiceComponentRequest>();
     setRequests.add(request1);
@@ -921,7 +921,7 @@ public class ComponentResourceProviderTest {
     expect(clusters.getCluster("cluster1")).andReturn(cluster);
     expect(cluster.getService("service1")).andReturn(service);
     expect(service.getServiceComponent("component1")).andThrow(
-        new ServiceComponentNotFoundException("cluster1", "service1", "component1"));
+        new ServiceComponentNotFoundException("cluster1", "service1", "service1", "CORE", "component1"));
     // replay mocks
     replay(maintHelper, injector, clusters, cluster, service);
 

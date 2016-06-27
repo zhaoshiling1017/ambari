@@ -21,6 +21,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.api.util.TreeNode;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.apache.ambari.server.orm.entities.ViewInstanceEntity;
@@ -131,7 +132,7 @@ public class ViewSubResourceServiceTest extends BaseServiceTest {
     Resource.Type type = new Resource.Type("subResource");
 
     // get resource
-    ViewSubResourceService service = new ViewSubResourceService(type, viewInstanceEntity);
+    ViewSubResourceService service = new ViewSubResourceService(ApiVersion.v1, type, viewInstanceEntity);
 
     ResultSerializer serializer = service.getResultSerializer(MediaType.TEXT_PLAIN_TYPE);
 
@@ -189,7 +190,7 @@ public class ViewSubResourceServiceTest extends BaseServiceTest {
     Resource.Type type = new Resource.Type("subResource");
 
     // get resource
-    ViewSubResourceService service = new ViewSubResourceService(type, viewInstanceEntity);
+    ViewSubResourceService service = new ViewSubResourceService(ApiVersion.v1, type, viewInstanceEntity);
 
     ResultSerializer serializer = service.getResultSerializer(MediaType.APPLICATION_JSON_TYPE);
 
@@ -218,7 +219,7 @@ public class ViewSubResourceServiceTest extends BaseServiceTest {
      * Construct a view sub-resource service.
      */
     public TestViewSubResourceService(Resource.Type type, ViewInstanceEntity viewInstanceDefinition) {
-      super(type, viewInstanceDefinition);
+      super(ApiVersion.v1, type, viewInstanceDefinition);
     }
 
     public Response getSubResource1(@Context HttpHeaders headers, @Context UriInfo ui,

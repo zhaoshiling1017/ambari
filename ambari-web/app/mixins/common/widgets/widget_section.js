@@ -72,14 +72,15 @@ App.WidgetSectionMixin = Ember.Mixin.create({
    */
   isServiceWithEnhancedWidgets: function () {
     var isServiceWithWidgetdescriptor;
-    var serviceName = this.get('content.serviceName');
+    var serviceName = this.get('content.stackServiceName');
+    var isCore = this.get('content.serviceGroupName') === 'CORE';
     if (serviceName) {
-      isServiceWithWidgetdescriptor = App.StackService.find().findProperty('serviceName', serviceName).get('isServiceWithWidgets');
+      isServiceWithWidgetdescriptor = App.StackService.find().findProperty('serviceName', serviceName).get('isServiceWithWidgets') && isCore;
     } else if (this.get('sectionName') === 'SYSTEM_HEATMAPS') {
       isServiceWithWidgetdescriptor = true;
     }
     return isServiceWithWidgetdescriptor;
-  }.property('content.serviceName'),
+  }.property('content.stackServiceName'),
 
   /**
    *  @Type {App.WidgetLayout}

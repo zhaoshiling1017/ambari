@@ -68,7 +68,8 @@ exports.config =
           'vendor/scripts/spin.js',
           'vendor/scripts/jquery.flexibleArea.js',
           'vendor/scripts/FileSaver.js',
-          'vendor/scripts/Blob.js'
+          'vendor/scripts/Blob.js',
+          'vendor/scripts/highlight.pack.js'
 
           ]
 
@@ -88,7 +89,8 @@ exports.config =
           'vendor/styles/bootstrap-checkbox.css',
           'vendor/styles/bootstrap-slider.min.css',
           'vendor/styles/bootstrap-switch.min.css',
-          'vendor/styles/visualsearch-datauri.css'
+          'vendor/styles/visualsearch-datauri.css',
+          'vendor/styles/highlight.css'
         ],
         after: ['app/styles/custom-ui.css']
 

@@ -18,6 +18,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.GET;
@@ -39,7 +40,8 @@ public class ActiveWidgetLayoutService extends BaseService {
 
   private final String userName;
 
-  public ActiveWidgetLayoutService(String userName) {
+  public ActiveWidgetLayoutService(ApiVersion apiVersion, String userName) {
+    super(apiVersion);
     this.userName = userName;
   }
 

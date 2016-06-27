@@ -23,6 +23,7 @@ import org.apache.ambari.server.api.services.stackadvisor.StackAdvisorException;
 import org.apache.ambari.server.api.services.stackadvisor.StackAdvisorRequest;
 import org.apache.ambari.server.api.services.stackadvisor.StackAdvisorRunner;
 import org.apache.ambari.server.api.services.stackadvisor.recommendations.RecommendationResponse;
+import org.apache.ambari.server.api.util.ApiVersion;
 
 import java.io.File;
 import java.util.HashMap;
@@ -40,9 +41,9 @@ import static org.apache.ambari.server.api.services.stackadvisor.recommendations
 public class ConfigurationDependenciesRecommendationCommand extends
     StackAdvisorCommand<RecommendationResponse> {
 
-  public ConfigurationDependenciesRecommendationCommand(File recommendationsDir, String stackAdvisorScript, int requestId,
+  public ConfigurationDependenciesRecommendationCommand(ApiVersion apiVersion, File recommendationsDir, String stackAdvisorScript, int requestId,
                                                         StackAdvisorRunner saRunner, AmbariMetaInfo metaInfo) {
-    super(recommendationsDir, stackAdvisorScript, requestId, saRunner, metaInfo);
+    super(apiVersion, recommendationsDir, stackAdvisorScript, requestId, saRunner, metaInfo);
   }
 
   @Override

@@ -18,11 +18,15 @@
 
 package org.apache.ambari.server.state;
 
+import com.google.inject.assistedinject.Assisted;
 import org.apache.ambari.server.orm.entities.ClusterServiceEntity;
 
 public interface ServiceFactory {
 
-  Service createNew(Cluster cluster, String serviceName);
+  Service createNew(Cluster cluster,
+                    @Assisted("serviceName") String serviceName,
+                    @Assisted("stackServiceName") String stackServiceName,
+                    @Assisted("serviceGroupName") String serviceGroupName);
 
   Service createExisting(Cluster cluster, ClusterServiceEntity serviceEntity);
 }

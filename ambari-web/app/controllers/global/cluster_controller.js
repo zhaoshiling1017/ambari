@@ -230,7 +230,10 @@ App.ClusterController = Em.Controller.extend(App.ReloadPopupMixin, {
       App.config.setPreDefinedServiceConfigs(true);
       self.updateLoadStatus('stackComponents');
       updater.updateServices(function () {
-        self.updateLoadStatus('services');
+        self.loadServiceGroups().done(function(data){
+          App.serviceGroupMapper.mapServiceGroups(data);
+          self.updateLoadStatus('services');
+        });
 
         //hosts should be loaded after services in order to properly populate host-component relation in App.cache.services
         updater.updateHost(function () {
@@ -348,6 +351,16 @@ App.ClusterController = Em.Controller.extend(App.ReloadPopupMixin, {
       },
       sender: callbackObj,
       success: 'loadStackServiceComponentsSuccess'
+    });
+  },
+
+  /**
+   *  @method loadServiceGroups
+   */
+  loadServiceGroups: function () {
+    return App.ajax.send({
+      name: 'service_group.get.info',
+      sender: this
     });
   },
 

@@ -36,7 +36,7 @@
     <package.prefix>/usr</package.prefix>
     <package.log.dir>/var/log/ambari-shell</package.log.dir>
     <package.pid.dir>/var/run/ambari-shell</package.pid.dir>
-    <skipTests>false</skipTests>
+    <skipTests>true</skipTests>
     <install.dir>/usr/lib/python2.6/site-packages/ambari_shell</install.dir>
     <lib.dir>/usr/lib/ambari-shell/lib</lib.dir>
     <python.ver>python &gt;= 2.6</python.ver>

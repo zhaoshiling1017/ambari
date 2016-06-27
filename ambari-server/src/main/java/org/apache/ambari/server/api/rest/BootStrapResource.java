@@ -45,7 +45,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.google.inject.Inject;
 
-@Path("/bootstrap")
 public class BootStrapResource {
 
   private static BootStrapImpl bsImpl;

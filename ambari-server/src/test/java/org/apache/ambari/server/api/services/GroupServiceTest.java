@@ -21,6 +21,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource.Type;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -78,6 +79,10 @@ public class GroupServiceTest extends BaseServiceTest {
   }
 
   private class TestGroupService extends GroupService {
+    public TestGroupService() {
+      super(ApiVersion.v1);
+    }
+
     @Override
     protected ResourceInstance createResource(Type type, Map<Type, String> mapIds) {
       return getTestResource();

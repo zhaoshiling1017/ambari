@@ -29,29 +29,37 @@ public class ServiceComponentRequest {
 
   private String desiredState; // CREATE/UPDATE
 
+  private String desiredCount; // CREATE/UPDATE
+
   private String componentCategory;
 
   private String recoveryEnabled; // CREATE/UPDATE
 
   public ServiceComponentRequest(String clusterName, String serviceName,
                                  String componentName, String desiredState) {
-    this(clusterName, serviceName, componentName, desiredState, null, null);
+    this(clusterName, serviceName, componentName, desiredState, null, null, null);
   }
 
   public ServiceComponentRequest(String clusterName, String serviceName,
-                                 String componentName, String desiredState,
+                                 String componentName, String desiredState, String desiredCount) {
+    this(clusterName, serviceName, componentName, desiredState, desiredCount, null, null);
+  }
+
+  public ServiceComponentRequest(String clusterName, String serviceName,
+                                 String componentName, String desiredState, String desiredCount,
                                  String recoveryEnabled) {
-    this(clusterName, serviceName, componentName, desiredState, recoveryEnabled, null);
+    this(clusterName, serviceName, componentName, desiredState, desiredCount, recoveryEnabled, null);
   }
 
   public ServiceComponentRequest(String clusterName,
                                  String serviceName, String componentName,
-                                 String desiredState, String recoveryEnabled,
+                                 String desiredState, String desiredCount, String recoveryEnabled,
                                  String componentCategory) {
     this.clusterName = clusterName;
     this.serviceName = serviceName;
     this.componentName = componentName;
     this.desiredState = desiredState;
+    this.desiredCount = desiredCount;
     this.recoveryEnabled = recoveryEnabled;
     this.componentCategory = componentCategory;
   }
@@ -96,6 +104,20 @@ public class ServiceComponentRequest {
    */
   public void setDesiredState(String desiredState) {
     this.desiredState = desiredState;
+  }
+
+  /**
+   * @return the desiredCount
+   */
+  public String getDesiredCount() {
+    return desiredCount;
+  }
+
+  /**
+   * @param desiredCount the desiredCount to set
+   */
+  public void setDesiredCount(String desiredCount) {
+    this.desiredCount = desiredCount;
   }
 
   /**

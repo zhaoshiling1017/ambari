@@ -28,7 +28,6 @@ import javax.ws.rs.core.MediaType;
  * or not
  */
 
-@Path("/check")
 public class HealthCheck {
   private static final String status = "RUNNING";
   // This method is called if TEXT_PLAIN is request

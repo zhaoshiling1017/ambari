@@ -23,13 +23,17 @@ public class ServiceRequest {
 
   private String clusterName; // REF
   private String serviceName; // GET/CREATE/UPDATE/DELETE
+  private String stackServiceName; // GET/CREATE/UPDATE/DELETE
+  private String serviceGroupName; // GET/CREATE/UPDATE/DELETE
   private String desiredState; // CREATE/UPDATE
   private String maintenanceState; // UPDATE
 
-  public ServiceRequest(String clusterName, String serviceName,
-                        String desiredState) {
+  public ServiceRequest(String clusterName, String serviceName, String stackServiceName,
+    String serviceGroupName, String desiredState) {
     this.clusterName = clusterName;
     this.serviceName = serviceName;
+    this.stackServiceName = stackServiceName;
+    this.serviceGroupName = serviceGroupName;
     this.desiredState = desiredState;
   }
 
@@ -45,6 +49,34 @@ public class ServiceRequest {
    */
   public void setServiceName(String serviceName) {
     this.serviceName = serviceName;
+  }
+
+  /**
+   * @return the serviceName
+   */
+  public String getStackServiceName() {
+    return stackServiceName;
+  }
+
+  /**
+   * @param stackServiceName the actual serviceName to set
+   */
+  public void setStackServiceName(String stackServiceName) {
+    this.stackServiceName = stackServiceName;
+  }
+
+  /**
+   * @return the serviceGroupName
+   */
+  public String getServiceGroupName() {
+    return serviceGroupName;
+  }
+
+  /**
+   * @param serviceGroupName the service group name to set
+   */
+  public void setServiceGroupName(String serviceGroupName) {
+    this.serviceGroupName = serviceGroupName;
   }
 
   /**

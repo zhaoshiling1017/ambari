@@ -19,6 +19,7 @@
 package org.apache.ambari.server.controller.internal;
 
 import org.apache.ambari.server.AmbariException;
+import org.apache.ambari.server.api.services.AmbariMetaInfo;
 import org.apache.ambari.server.controller.AmbariManagementController;
 import org.apache.ambari.server.controller.spi.NoSuchParentResourceException;
 import org.apache.ambari.server.controller.spi.NoSuchResourceException;
@@ -138,8 +139,9 @@ public class QuickLinkArtifactResourceProvider extends AbstractControllerResourc
       String stackService = (String) properties.get(STACK_SERVICE_NAME_PROPERTY_ID);
 
       StackInfo stackInfo;
+      AmbariMetaInfo ambariMetaInfo = getManagementController().getAmbariMetaInfo();
       try {
-        stackInfo = getManagementController().getAmbariMetaInfo().getStack(stackName, stackVersion);
+        stackInfo = ambariMetaInfo.getStack(stackName, stackVersion);
       } catch (AmbariException e) {
         throw new NoSuchParentResourceException(String.format(
           "Parent stack resource doesn't exist: stackName='%s', stackVersion='%s'", stackName, stackVersion));
@@ -150,13 +152,19 @@ public class QuickLinkArtifactResourceProvider extends AbstractControllerResourc
       if (stackService == null) {
         serviceInfoList.addAll(stackInfo.getServices());
       } else {
-        ServiceInfo service = stackInfo.getService(stackService);
-        if (service == null) {
+        try {
+          ServiceInfo service = ambariMetaInfo.getService(stackName, stackVersion, stackService);
+          if (service == null) {
+            throw new NoSuchParentResourceException(String.format(
+                "Parent stack/service resource doesn't exist: stackName='%s', stackVersion='%s', serviceName='%s'",
+                stackName, stackVersion, stackService));
+          }
+          serviceInfoList.add(service);
+        } catch (AmbariException e) {
           throw new NoSuchParentResourceException(String.format(
-            "Parent stack/service resource doesn't exist: stackName='%s', stackVersion='%s', serviceName='%s'",
-            stackName, stackVersion, stackService));
+              "Parent stack/service resource doesn't exist: stackName='%s', stackVersion='%s', serviceName='%s'",
+              stackName, stackVersion, stackService));
         }
-        serviceInfoList.add(service);
       }
 
       for (ServiceInfo serviceInfo : serviceInfoList) {

@@ -1,0 +1,66 @@
+{{!
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+}}
+
+<div class="manage-assembly-content span8">
+  <p class="descriptions">{{content.description}}</p>
+  <p id="services-label">{{t assembly.manage.summary.label.service}}</p>
+  <div id="services-images">
+    {{! Services logos }}
+    {{#each service in view.shownServices}}
+      <div {{bindAttr class="service.isActive:active :span2 :service-image"}}>
+        <img  {{action "makeServiceActive" service target="view"}} {{bindAttr src="service.url" alt="service.displayName" title="service.displayName"}}/>
+      </div>
+    {{/each}}
+  </div>
+  <div class="clearfix"></div>
+  <div class="box" id="service-summary">
+    <div class="box-header summary-box-header">
+      <h4>{{view.activeService.displayName}}&nbsp;{{t services.service.info.menu.summary}}</h4>
+    </div>
+    {{#if view.showSpinner}}
+      {{view App.SpinnerView}}
+    {{else}}
+      {{view view.serviceSummaryView}}
+    {{/if}}
+  </div>
+</div>
+<div id="assembly-information" class="span4">
+  {{#if content.isCfMonitorServiceGroup}}
+    <div id="assembly-business-impact">
+      <span id="assembly-business-impact-label">{{t assembly.manage.summary.business.impact}}</span>
+      <div class="business-impact">
+        <div class="span6" id="fraud-transactions">
+          <p class="bi-value text-error">{{content.businessImpact.fraudTransactions}}</p>
+          <p class="description">{{t assembly.manage.fraudTransactions}}</p>
+        </div>
+        <div class="span6" id="fraud-cost">
+          <p class="bi-value">{{content.businessImpact.fraudCost}}</p>
+          <p class="description">{{t assembly.manage.fraudCost}}</p>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </div>
+  {{/if}}
+  <div id="assembly-quick-links">
+    <span id="assembly-quick-links-label">{{t assembly.manage.summary.quick.links}}</span>
+    <li> <a tabindex="-1" class="assembly-quick-link" href="#" {{action "showAssemblyFile" target="view"}}>{{t assembly.manage.assemblySpecFile}}</a></li>
+    {{#each assemblyLink in content.assemblyLinks}}
+       <li> <a tabindex="-1" class="assembly-quick-link" {{bindAttr href="assemblyLink.url"}} target="_blank">{{assemblyLink.label}}</a></li>
+    {{/each}}
+  </div>
+</div>

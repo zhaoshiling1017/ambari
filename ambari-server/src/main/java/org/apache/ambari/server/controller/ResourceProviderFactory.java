@@ -46,6 +46,11 @@ public interface ResourceProviderFactory {
       Map<Type, String> keyPropertyIds,
       AmbariManagementController managementController);
 
+  @Named("servicegroup")
+  ResourceProvider getServiceGroupResourceProvider(Set<String> propertyIds,
+      Map<Type, String> keyPropertyIds,
+      AmbariManagementController managementController);
+
   @Named("component")
   ResourceProvider getComponentResourceProvider(Set<String> propertyIds,
       Map<Type, String> keyPropertyIds,

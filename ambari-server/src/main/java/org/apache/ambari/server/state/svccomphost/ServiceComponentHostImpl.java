@@ -1158,6 +1158,17 @@ public class ServiceComponentHostImpl implements ServiceComponentHost {
   }
 
   @Override
+  public String getStackServiceName() {
+    return serviceComponent.getStackServiceName();
+  }
+
+  @Override
+  public String getServiceGroupName() {
+    return serviceComponent.getServiceGroupName();
+  }
+
+
+  @Override
   public StackId getStackVersion() {
     readLock.lock();
     try {
@@ -1453,7 +1464,7 @@ public class ServiceComponentHostImpl implements ServiceComponentHost {
 
           ServiceComponentInstalledEvent event = new ServiceComponentInstalledEvent(
               getClusterId(), stackId.getStackName(),
-              stackId.getStackVersion(), getServiceName(), getServiceComponentName(), getHostName(),
+              stackId.getStackVersion(), getServiceName(), getStackServiceName(), getServiceGroupName(), getServiceComponentName(), getHostName(),
                   isRecoveryEnabled());
 
           eventPublisher.publish(event);
@@ -1597,12 +1608,14 @@ public class ServiceComponentHostImpl implements ServiceComponentHost {
       String stackVersion = stackId.getStackVersion();
       String stackName = stackId.getStackName();
       String serviceName = getServiceName();
+      String stackServiceName = getStackServiceName();
+      String serviceGroupName = getServiceGroupName();
       String componentName = getServiceComponentName();
       String hostName = getHostName();
       boolean recoveryEnabled = isRecoveryEnabled();
 
       ServiceComponentUninstalledEvent event = new ServiceComponentUninstalledEvent(
-          clusterId, stackName, stackVersion, serviceName, componentName,
+          clusterId, stackName, stackVersion, serviceName, stackServiceName, serviceGroupName, componentName,
           hostName, recoveryEnabled);
 
       eventPublisher.publish(event);

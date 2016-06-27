@@ -1,6 +1,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.DELETE;
@@ -33,8 +34,11 @@ import java.util.Collections;
  * limitations under the License.
  */
 
-@Path("/kerberos_descriptors/")
 public class KerberosDescriptorService extends BaseService {
+
+  public KerberosDescriptorService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
 
   /**
    * Handles: GET  /kerberos_descriptors

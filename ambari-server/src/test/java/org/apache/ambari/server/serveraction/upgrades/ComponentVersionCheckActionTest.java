@@ -375,7 +375,7 @@ public class ComponentVersionCheckActionTest {
     try {
       service = cluster.getService(serviceName);
     } catch (ServiceNotFoundException e) {
-      service = serviceFactory.createNew(cluster, serviceName);
+      service = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
       cluster.addService(service);
       service.persist();
     }

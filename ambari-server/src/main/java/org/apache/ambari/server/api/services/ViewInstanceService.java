@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.apache.ambari.server.orm.entities.ViewInstanceEntity;
 import org.apache.ambari.server.security.authorization.AuthorizationException;
@@ -66,7 +67,8 @@ public class ViewInstanceService extends BaseService {
    * @param viewName  the view id
    * @param version   the version
    */
-  public ViewInstanceService(String viewName, String version) {
+  public ViewInstanceService(ApiVersion apiVersion, String viewName, String version) {
+    super(apiVersion);
     this.viewName = viewName;
     this.version = version;
 
@@ -237,13 +239,13 @@ public class ViewInstanceService extends BaseService {
 
     hasPermission(Request.Type.valueOf(request.getMethod()), instanceName);
 
-    return new ViewPrivilegeService(viewName, version, instanceName);
+    return new ViewPrivilegeService(m_apiVersion, viewName, version, instanceName);
   }
 
   @Path("{instanceName}/migrate")
   public ViewDataMigrationService migrateData(@Context javax.ws.rs.core.Request request,
                                               @PathParam ("instanceName") String instanceName) {
-    return new ViewDataMigrationService(viewName, version, instanceName);
+    return new ViewDataMigrationService(m_apiVersion, viewName, version, instanceName);
   }
   // ----- helper methods ----------------------------------------------------
 

@@ -201,7 +201,7 @@ public class BackgroundCustomCommandExecutionTest {
     if (desiredState != null) {
       dStateStr = desiredState.toString();
     }
-    ServiceRequest r1 = new ServiceRequest(clusterName, serviceName, dStateStr);
+    ServiceRequest r1 = new ServiceRequest(clusterName, serviceName, serviceName, "CORE", dStateStr);
     Set<ServiceRequest> requests = new HashSet<ServiceRequest>();
     requests.add(r1);
 

@@ -17,9 +17,21 @@
 }}
 
 <div class="row-fluid">
-  <div class="services-menu well span2 service-menu-width" style="padding: 8px 0">
-    {{view App.MainServiceMenuView}}
-    {{view App.AllServicesActionView}}
+  <div class="span2 service-menu-width" style="padding: 8px 0">
+    <div class="service-group-name">
+      {{#if serviceGroup.isCoreServiceGroup}}
+        {{App.currentStackName}}
+      {{else}}
+        {{serviceGroup.serviceGroupDisplayName}}
+      {{/if}}
+      {{#if serviceGroup.alertsCount}}
+        <span class="label alerts-count alerts-crit-count pull-right">{{serviceGroup.shownAlertsCount}}</span>
+      {{/if}}
+    </div>
+    <div class="services-menu well" style="padding: 8px 0">
+      {{view App.MainServiceMenuView serviceGroupBinding="serviceGroup"}}
+      {{view App.AllServicesActionView serviceGroupBinding="serviceGroup"}}
+    </div>
   </div>
   <div class="span10 summary-width">
     {{outlet}}

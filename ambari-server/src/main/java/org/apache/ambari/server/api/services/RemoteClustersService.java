@@ -20,6 +20,7 @@ package org.apache.ambari.server.api.services;
 
 import com.google.common.base.Optional;
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.apache.ambari.server.security.authorization.AuthorizationException;
 
@@ -40,8 +41,11 @@ import java.util.Collections;
 /**
  * Service responsible for Remote Cluster resource requests.
  */
-@Path("/remoteclusters")
 public class RemoteClustersService extends BaseService {
+
+  public RemoteClustersService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
 
   /**
    * Get the list of all Remote Clusters

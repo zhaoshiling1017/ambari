@@ -22,6 +22,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
@@ -91,7 +92,7 @@ public class HostComponentServiceTest extends BaseServiceTest {
     private String m_hostComponentId;
 
     private TestHostComponentService(String clusterId, String hostId, String hostComponentId) {
-      super(clusterId, hostId);
+      super(ApiVersion.v1, clusterId, hostId);
       m_clusterId = clusterId;
       m_hostId = hostId;
       m_hostComponentId = hostComponentId;

@@ -140,7 +140,7 @@ public class StageUtilsTest extends EasyMockSupport {
     ServiceComponentHostFactory serviceComponentHostFactory = injector.getInstance(ServiceComponentHostFactory.class);
 
     cl.setDesiredStackVersion(new StackId(STACK_ID));
-    cl.addService(serviceName);
+    cl.addService(serviceName, serviceName, "CORE");
 
     for (Entry<String, List<Integer>> component : topology.entrySet()) {
       String componentName = component.getKey();

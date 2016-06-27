@@ -22,13 +22,16 @@ require('utils/config');
 
 App.Service = DS.Model.extend({
   serviceName: DS.attr('string'),
-  displayName: Em.computed.formatRole('serviceName', true),
+  displayName: Em.computed.formatRole('stackServiceName', true),
+  stackServiceName: DS.attr('string'),
+  serviceGroupName: DS.attr('string'),
   passiveState: DS.attr('string'),
   workStatus: DS.attr('string'),
   rand: DS.attr('string'),
   toolTipContent: DS.attr('string'),
   quickLinks: DS.hasMany('App.QuickLinks'),  // mapped in app/mappers/service_metrics_mapper.js method - mapQuickLinks
   hostComponents: DS.hasMany('App.HostComponent'),
+  serviceGroup: DS.belongsTo('App.ServiceGroup'),
   serviceConfigsTemplate: App.config.get('preDefinedServiceConfigs'),
   /**
    * used by services("OOZIE", "ZOOKEEPER", "HIVE", "MAPREDUCE2", "TEZ", "SQOOP", "PIG","FALCON")
@@ -165,7 +168,14 @@ App.Service = DS.Model.extend({
    * Number of the Critical and Warning alerts for current service
    * @type {number}
    */
-  alertsCount: 0
+  alertsCount: 0,
+
+  /**
+   *
+   */
+  logo: function() {
+    return App.Service.logo[this.get('stackServiceName')];
+  }.property('id')
 
 });
 
@@ -251,3 +261,18 @@ App.Service.extendedModel = {
 };
 
 App.Service.FIXTURES = [];
+
+App.Service.logo = {
+  'NIFI': '/img/nifi-color.png',
+  'CFMON': '/img/cfmon-color.png',
+  'LOGSEARCH': '/img/solr-color.png',
+  'SQOOP':'/img/sqoop-color.png',
+  'FALCON':'/img/falcon-color.png',
+  'SPARK':'/img/spark-color.png',
+  'SPARK2':'/img/spark-color.png',
+  'STORM':'/img/storm-color.png',
+  'ACCUMULO':'/img/accumulo-color.png',
+  'HBASE':'/img/hbase-color.png',
+  'ZOOKEEPER':'/img/zookeeper-color.png',
+  'KAFKA':'/img/kafka-color.png'
+};

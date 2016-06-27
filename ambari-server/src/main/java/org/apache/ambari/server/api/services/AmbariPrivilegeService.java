@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.Path;
@@ -27,8 +28,10 @@ import java.util.Collections;
 /**
  *  Service responsible for Ambari privilege resource requests.
  */
-@Path("/privileges/")
 public class AmbariPrivilegeService extends PrivilegeService {
+  public AmbariPrivilegeService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
 
   // ----- PrivilegeService --------------------------------------------------
 

@@ -419,6 +419,7 @@ public class ConfigGroupImpl implements ConfigGroup {
           clusterConfigEntity.setClusterEntity(clusterEntity);
           clusterConfigEntity.setStack(clusterEntity.getDesiredStack());
           clusterConfigEntity.setType(config.getType());
+          clusterConfigEntity.setStackType(config.getStackType());
           clusterConfigEntity.setVersion(config.getVersion());
           clusterConfigEntity.setTag(config.getTag());
           clusterConfigEntity.setData(gson.toJson(config.getProperties()));

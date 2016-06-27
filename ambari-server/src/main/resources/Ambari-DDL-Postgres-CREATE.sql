@@ -54,6 +54,7 @@ CREATE TABLE clusterconfig (
   version_tag VARCHAR(255) NOT NULL,
   version BIGINT NOT NULL,
   type_name VARCHAR(255) NOT NULL,
+  stack_type_name VARCHAR(255) NOT NULL,
   cluster_id BIGINT NOT NULL,
   stack_id BIGINT NOT NULL,
   config_data TEXT NOT NULL,
@@ -123,8 +124,21 @@ CREATE TABLE serviceconfigmapping (
   CONSTRAINT FK_scvm_config FOREIGN KEY (config_id) REFERENCES clusterconfig(config_id),
   CONSTRAINT FK_scvm_scv FOREIGN KEY (service_config_id) REFERENCES serviceconfig(service_config_id));
 
+CREATE TABLE clusterservicegroups (
+  service_group_name VARCHAR(255) NOT NULL,
+  service_group_display_name VARCHAR(255) NOT NULL,
+  cluster_id BIGINT NOT NULL,
+  service_group_type VARCHAR(255) NOT NULL DEFAULT 'AMBARI',
+  assembly_file TEXT,
+  current_state VARCHAR(255) NOT NULL,
+  desired_state VARCHAR(255) NOT NULL,
+  CONSTRAINT PK_clusterservicegroups PRIMARY KEY (service_group_name, cluster_id),
+  CONSTRAINT FK_clusterservicegroups_cluster_id FOREIGN KEY (cluster_id) REFERENCES clusters (cluster_id));
+
 CREATE TABLE clusterservices (
   service_name VARCHAR(255) NOT NULL,
+  stack_service_name VARCHAR(255) NOT NULL,
+  service_group_name VARCHAR(100) DEFAULT 'CORE' NOT NULL,
   cluster_id BIGINT NOT NULL,
   service_enabled INTEGER NOT NULL,
   CONSTRAINT PK_clusterservices PRIMARY KEY (service_name, cluster_id),
@@ -175,6 +189,7 @@ CREATE TABLE servicecomponentdesiredstate (
   desired_state VARCHAR(255) NOT NULL,
   service_name VARCHAR(255) NOT NULL,
   recovery_enabled SMALLINT NOT NULL DEFAULT 0,
+  desired_count INTEGER NOT NULL DEFAULT 0,
   CONSTRAINT pk_sc_desiredstate PRIMARY KEY (id),
   CONSTRAINT unq_scdesiredstate_name UNIQUE(component_name, service_name, cluster_id),
   CONSTRAINT FK_scds_desired_stack_id FOREIGN KEY (desired_stack_id) REFERENCES stack(stack_id),
@@ -566,7 +581,7 @@ CREATE TABLE viewinstance (
   icon64 VARCHAR(255),
   xml_driven CHAR(1),
   alter_names SMALLINT NOT NULL DEFAULT 1,
-  cluster_handle VARCHAR(255),
+  cluster_handle BIGINT,
   cluster_type VARCHAR(100) NOT NULL DEFAULT 'LOCAL_AMBARI',
   short_url BIGINT,
   CONSTRAINT PK_viewinstance PRIMARY KEY (view_instance_id),

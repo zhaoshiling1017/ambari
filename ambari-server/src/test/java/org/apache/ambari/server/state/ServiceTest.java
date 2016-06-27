@@ -79,7 +79,7 @@ public class ServiceTest {
   @Test
   public void testCreateService() throws AmbariException {
     String serviceName = "HDFS";
-    Service s = serviceFactory.createNew(cluster, serviceName);
+    Service s = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     cluster.addService(s);
     s.persist();
     Service service = cluster.getService(serviceName);
@@ -99,7 +99,7 @@ public class ServiceTest {
   @Test
   public void testGetAndSetServiceInfo() throws AmbariException {
     String serviceName = "HDFS";
-    Service s = serviceFactory.createNew(cluster, serviceName);
+    Service s = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     cluster.addService(s);
     s.persist();
 
@@ -121,7 +121,7 @@ public class ServiceTest {
   @Test
   public void testAddAndGetServiceComponents() throws AmbariException {
     String serviceName = "HDFS";
-    Service s = serviceFactory.createNew(cluster, serviceName);
+    Service s = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     cluster.addService(s);
     s.persist();
 
@@ -198,7 +198,7 @@ public class ServiceTest {
   @Test
   public void testConvertToResponse() throws AmbariException {
     String serviceName = "HDFS";
-    Service s = serviceFactory.createNew(cluster, serviceName);
+    Service s = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     cluster.addService(s);
     Service service = cluster.getService(serviceName);
     Assert.assertNotNull(service);
@@ -233,8 +233,8 @@ public class ServiceTest {
 
   @Test
   public void testDeleteServiceComponent() throws Exception {
-    Service hdfs = cluster.addService("HDFS");
-    Service mapReduce = cluster.addService("MAPREDUCE");
+    Service hdfs = cluster.addService("HDFS", "HDFS", "CORE");
+    Service mapReduce = cluster.addService("MAPREDUCE", "MAPREDUCE", "CORE");
 
     hdfs.persist();
 
@@ -262,7 +262,7 @@ public class ServiceTest {
 
   @Test
   public void testCanBeRemoved() throws Exception{
-    Service service = cluster.addService("HDFS");
+    Service service = cluster.addService("HDFS", "HDFS", "CORE");
 
     for (State state : State.values()) {
       service.setDesiredState(state);
@@ -301,7 +301,7 @@ public class ServiceTest {
   @Test
   public void testServiceMaintenance() throws Exception {
     String serviceName = "HDFS";
-    Service s = serviceFactory.createNew(cluster, serviceName);
+    Service s = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     cluster.addService(s);
     s.persist();
 
@@ -325,7 +325,7 @@ public class ServiceTest {
   @Test
   public void testSecurityState() throws Exception {
     String serviceName = "HDFS";
-    Service s = serviceFactory.createNew(cluster, serviceName);
+    Service s = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     cluster.addService(s);
     s.persist();
 

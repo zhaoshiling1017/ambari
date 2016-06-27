@@ -357,7 +357,9 @@ App.MainServiceInfoSummaryView = Em.View.extend(App.UserPref, App.TimeRangeMixin
     var self = this,
         stackService = App.StackService.find(this.get('controller.content.serviceName'));
 
-    if (!graphNames && !stackService.get('isServiceWithWidgets')) {
+    var isAssembly = this.get('controller.content.serviceGroupName') !== 'CORE';
+
+    if ((!graphNames && !stackService.get('isServiceWithWidgets')) || isAssembly) {
       this.get('serviceMetricGraphs').clear();
       this.set('isServiceMetricLoaded', false);
       return;

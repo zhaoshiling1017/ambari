@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 /**
@@ -50,7 +51,8 @@ public class ServiceService extends BaseService {
    *
    * @param clusterName cluster id
    */
-  public ServiceService(String clusterName) {
+  public ServiceService(ApiVersion apiVersion, String clusterName) {
+    super(apiVersion);
     m_clusterName = clusterName;
   }
 
@@ -187,7 +189,7 @@ public class ServiceService extends BaseService {
   @Path("{serviceName}/components")
   public ComponentService getComponentHandler(@PathParam("serviceName") String serviceName) {
 
-    return new ComponentService(m_clusterName, serviceName);
+    return new ComponentService(m_apiVersion, m_clusterName, serviceName);
   }
 
   /**
@@ -196,7 +198,7 @@ public class ServiceService extends BaseService {
   @Path("{serviceName}/alerts")
   public AlertService getAlertHandler(
       @PathParam("serviceName") String serviceName) {
-    return new AlertService(m_clusterName, serviceName, null);
+    return new AlertService(m_apiVersion, m_clusterName, serviceName, null);
   }
 
   /**
@@ -379,7 +381,7 @@ public class ServiceService extends BaseService {
       @Context javax.ws.rs.core.Request request,
       @PathParam("serviceName") String serviceName) {
 
-    return new AlertHistoryService(m_clusterName, serviceName, null);
+    return new AlertHistoryService(m_apiVersion, m_clusterName, serviceName, null);
   }
 
   /**
@@ -391,7 +393,7 @@ public class ServiceService extends BaseService {
    * @return a service resource instance
    */
   ResourceInstance createServiceResource(String clusterName, String serviceName) {
-    Map<Resource.Type,String> mapIds = new HashMap<Resource.Type, String>();
+    Map<Resource.Type,String> mapIds = new HashMap<>();
     mapIds.put(Resource.Type.Cluster, clusterName);
     mapIds.put(Resource.Type.Service, serviceName);
 
@@ -408,7 +410,7 @@ public class ServiceService extends BaseService {
    * @return an artifact resource instance
    */
   ResourceInstance createArtifactResource(String clusterName, String serviceName, String artifactName) {
-    Map<Resource.Type,String> mapIds = new HashMap<Resource.Type, String>();
+    Map<Resource.Type,String> mapIds = new HashMap<>();
     mapIds.put(Resource.Type.Cluster, clusterName);
     mapIds.put(Resource.Type.Service, serviceName);
     mapIds.put(Resource.Type.Artifact, artifactName);

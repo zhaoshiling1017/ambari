@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.DELETE;
@@ -60,7 +61,8 @@ public class ViewPermissionService extends BaseService {
    * @param viewName  the view id
    * @param version   the version
    */
-  public ViewPermissionService(String viewName, String version) {
+  public ViewPermissionService(ApiVersion apiVersion, String viewName, String version) {
+    super(apiVersion);
     this.viewName = viewName;
     this.version  = version;
   }

@@ -22,23 +22,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 /**
  * Service for stacks management.
  */
-@Path("/stacks/")
 public class StacksService extends BaseService {
+
+  public StacksService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
 
   @GET
   @Produces("text/plain")
@@ -333,7 +331,48 @@ public class StacksService extends BaseService {
     final Map<Resource.Type, String> stackProperties = new HashMap<Resource.Type, String>();
     stackProperties.put(Resource.Type.Stack, stackName);
     stackProperties.put(Resource.Type.StackVersion, stackVersion);
-    return new OperatingSystemService(stackProperties);
+    return new OperatingSystemService(m_apiVersion, stackProperties);
+  }
+
+  /**
+   * Returns host-layout recommendations for list of hosts and services.
+   *
+   * @param body http body
+   * @param headers http headers
+   * @param ui uri info
+   * @param stackName stack name
+   * @param stackVersion stack version
+   * @return recommendations for host-layout
+   */
+  @POST
+  @Path("{stackName}/versions/{stackVersion}/recommendations")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getRecommendation(String body, @Context HttpHeaders headers, @Context UriInfo ui,
+                                    @PathParam("stackName") String stackName,
+                                    @PathParam("stackVersion") String stackVersion) {
+
+    return handleRequest(headers, body, ui, Request.Type.POST,
+        createRecommendationResource(stackName, stackVersion));
+  }
+
+  /**
+   * Returns validation of host-layout.
+   *
+   * @param body http body
+   * @param headers http headers
+   * @param ui uri info
+   * @param stackName stack name
+   * @param stackVersion stack version
+   * @return validation items if any
+   */
+  @POST
+  @Path("{stackName}/versions/{stackVersion}/validations")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getValidation(String body, @Context HttpHeaders headers, @Context UriInfo ui,
+                                @PathParam("stackName") String stackName, @PathParam("stackVersion") String stackVersion) {
+
+    return handleRequest(headers, body, ui, Request.Type.POST,
+        createValidationResource(stackName, stackVersion));
   }
 
   /**
@@ -348,7 +387,7 @@ public class StacksService extends BaseService {
     final Map<Resource.Type, String> stackProperties = new HashMap<Resource.Type, String>();
     stackProperties.put(Resource.Type.Stack, stackName);
     stackProperties.put(Resource.Type.StackVersion, stackVersion);
-    return new RepositoryVersionService(stackProperties);
+    return new RepositoryVersionService(m_apiVersion, stackProperties);
   }
 
   /**
@@ -365,7 +404,7 @@ public class StacksService extends BaseService {
     final Map<Resource.Type, String> stackProperties = new HashMap<Resource.Type, String>();
     stackProperties.put(Resource.Type.Stack, stackName);
     stackProperties.put(Resource.Type.StackVersion, stackVersion);
-    return new CompatibleRepositoryVersionService(stackProperties);
+    return new CompatibleRepositoryVersionService(m_apiVersion, stackProperties);
   }
 
   ResourceInstance createStackServiceComponentResource(
@@ -496,6 +535,22 @@ public class StacksService extends BaseService {
     return createResource(Resource.Type.Stack,
         Collections.singletonMap(Resource.Type.Stack, stackName));
 
+  }
+
+  ResourceInstance createRecommendationResource(String stackName, String stackVersion) {
+    Map<Resource.Type, String> mapIds = new HashMap<Resource.Type, String>();
+    mapIds.put(Resource.Type.Stack, stackName);
+    mapIds.put(Resource.Type.StackVersion, stackVersion);
+
+    return createResource(Resource.Type.Recommendation, mapIds);
+  }
+
+  ResourceInstance createValidationResource(String stackName, String stackVersion) {
+    Map<Resource.Type, String> mapIds = new HashMap<Resource.Type, String>();
+    mapIds.put(Resource.Type.Stack, stackName);
+    mapIds.put(Resource.Type.StackVersion, stackVersion);
+
+    return createResource(Resource.Type.Validation, mapIds);
   }
 }
 

@@ -104,6 +104,7 @@ public class ServiceEventCreatorTest extends AuditEventCreatorTestBase {
     Map<String,Object> properties = new HashMap<>();
     properties.put(ServiceResourceProvider.SERVICE_SERVICE_STATE_PROPERTY_ID, "STARTED");
     properties.put(ServiceResourceProvider.SERVICE_SERVICE_NAME_PROPERTY_ID, "MyService");
+    properties.put(ServiceResourceProvider.SERVICE_STACK_SERVICE_NAME_PROPERTY_ID, "MyService");
 
     Request request = AuditEventCreatorTestHelper.createRequest(Request.Type.PUT, Resource.Type.Service, properties, null);
     request.getBody().addRequestInfoProperty(RequestOperationLevel.OPERATION_LEVEL_ID, "SERVICE");
@@ -131,6 +132,7 @@ public class ServiceEventCreatorTest extends AuditEventCreatorTestBase {
     Map<String,Object> properties = new HashMap<>();
     properties.put(ServiceResourceProvider.SERVICE_MAINTENANCE_STATE_PROPERTY_ID, "ON");
     properties.put(ServiceResourceProvider.SERVICE_SERVICE_NAME_PROPERTY_ID, "MyService");
+    properties.put(ServiceResourceProvider.SERVICE_STACK_SERVICE_NAME_PROPERTY_ID, "MyService");
 
     Request request = AuditEventCreatorTestHelper.createRequest(Request.Type.PUT, Resource.Type.Service, properties, null);
 
@@ -156,6 +158,7 @@ public class ServiceEventCreatorTest extends AuditEventCreatorTestBase {
     Map<String,Object> properties = new HashMap<>();
     properties.put(ServiceResourceProvider.SERVICE_MAINTENANCE_STATE_PROPERTY_ID, "ON");
     properties.put(ServiceResourceProvider.SERVICE_SERVICE_NAME_PROPERTY_ID, "MyService");
+    properties.put(ServiceResourceProvider.SERVICE_STACK_SERVICE_NAME_PROPERTY_ID, "MyService");
 
     Request request = AuditEventCreatorTestHelper.createRequest(Request.Type.PUT, Resource.Type.Service, properties, null);
 

@@ -57,6 +57,7 @@ public class ConfigImpl implements Config {
   private Cluster cluster;
   private StackId stackId;
   private String type;
+  private String stackType;
   private volatile String tag;
   private volatile Long version;
   private volatile Map<String, String> properties;
@@ -81,6 +82,10 @@ public class ConfigImpl implements Config {
       @Assisted Map<String, Map<String, String>> propertiesAttributes, Injector injector) {
     this.cluster = cluster;
     this.type = type;
+    this.stackType = cluster.getStackConfigTypeFromConfigType(type);
+    if(StringUtils.isBlank(this.stackType)) {
+      this.stackType = type;
+    }
     this.properties = properties;
     this.propertiesAttributes = propertiesAttributes;
 
@@ -97,6 +102,7 @@ public class ConfigImpl implements Config {
   public ConfigImpl(@Assisted Cluster cluster, @Assisted ClusterConfigEntity entity, Injector injector) {
     this.cluster = cluster;
     type = entity.getType();
+    stackType = entity.getStackType();
     tag = entity.getTag();
     version = entity.getVersion();
 
@@ -168,7 +174,16 @@ public class ConfigImpl implements Config {
     } finally {
       readWriteLock.readLock().unlock();
     }
+  }
 
+  @Override
+  public String getStackType() {
+    readWriteLock.readLock().lock();
+    try {
+      return stackType;
+    } finally {
+      readWriteLock.readLock().unlock();
+    }
   }
 
   @Override
@@ -362,6 +377,7 @@ public class ConfigImpl implements Config {
           entity.setClusterEntity(clusterEntity);
           entity.setClusterId(cluster.getClusterId());
           entity.setType(getType());
+          entity.setStackType(getStackType());
           entity.setVersion(getVersion());
           entity.setTag(getTag());
           entity.setTimestamp(new Date().getTime());

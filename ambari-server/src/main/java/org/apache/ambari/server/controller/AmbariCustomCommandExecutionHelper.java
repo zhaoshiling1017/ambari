@@ -1234,7 +1234,7 @@ public class AmbariCustomCommandExecutionHelper {
 
       StackInfo stack = ambariMetaInfo.getStack(stackId.getStackName(), stackId.getStackVersion());
       if (stack != null) {
-        ServiceInfo serviceInfo = stack.getService(serviceName);
+        ServiceInfo serviceInfo = ambariMetaInfo.getService(stackId.getStackName(), stackId.getStackVersion(), serviceName);
 
         if (serviceInfo != null) {
           // if there is a chance that this action was triggered by a change in rack info then we want to

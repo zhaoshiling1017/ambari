@@ -1,0 +1,38 @@
+{{!
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+}}
+<div class="assembly-header">
+  <h5 id="servicegroup-title" class="pull-left">
+    {{content.serviceGroupDisplayName}}
+    {{#if content.alertsCount}}
+      <span class="label alerts-crit-count">{{content.shownAlertsCount}}</span>
+    {{/if}}
+  </h5>
+  <p class="desired-state pull-right">
+    {{#if content.isStarted}}
+      <span class="pull-right alert alert-success desired-state-label" {{action "stopServiceGroup" target="controller"}}>{{t common.running}} <a href="#"><i class="icon-pause"></i></a></span>
+    {{/if}}
+    {{#if content.isStopped}}
+      <span class="pull-right alert alert-danger desired-state-label" {{action "startServiceGroup" target="controller"}}>{{t common.stopped}} <a href="#"><i class="icon-play"></i></a></span>
+    {{/if}}
+  </p>
+  <div class="clearfix"></div>
+</div>
+<div id="main-servicegroup-section-panel">
+  {{view App.MainAssembliesServiceGroupMenuView}}
+  {{outlet}}
+</div>

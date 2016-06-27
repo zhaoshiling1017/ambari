@@ -21,6 +21,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.state.Clusters;
 import org.apache.ambari.server.state.cluster.ClustersImpl;
 
@@ -128,7 +129,7 @@ public class ClusterServiceTest extends BaseServiceTest {
     private String m_clusterId;
 
     private TestClusterService(Clusters clusters, String clusterId) {
-      super(clusters);
+      super(ApiVersion.v1, clusters);
       m_clusterId = clusterId;
     }
 

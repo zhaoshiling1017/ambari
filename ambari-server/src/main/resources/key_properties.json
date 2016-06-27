@@ -2,6 +2,10 @@
   "Cluster": {
     "Cluster": "Clusters/cluster_name"
   },
+  "ServiceGroup": {
+    "Cluster": "ServiceGroupInfo/cluster_name",
+    "ServiceGroup": "ServiceGroupInfo/service_group_name"
+  },
   "Service": {
     "Cluster": "ServiceInfo/cluster_name",
     "Service": "ServiceInfo/service_name"
@@ -19,6 +23,7 @@
   "HostComponent": {
     "Cluster": "HostRoles/cluster_name",
     "Host": "HostRoles/host_name",
+    "Service": "HostRoles/service_name",
     "HostComponent": "HostRoles/component_name",
     "Component": "HostRoles/component_name"
   },

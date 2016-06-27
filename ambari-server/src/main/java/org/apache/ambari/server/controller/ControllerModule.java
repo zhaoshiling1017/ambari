@@ -69,9 +69,12 @@ import org.apache.ambari.server.controller.internal.KerberosDescriptorResourcePr
 import org.apache.ambari.server.controller.internal.MemberResourceProvider;
 import org.apache.ambari.server.controller.internal.RepositoryVersionResourceProvider;
 import org.apache.ambari.server.controller.internal.ServiceResourceProvider;
+import org.apache.ambari.server.controller.internal.ServiceGroupResourceProvider;
 import org.apache.ambari.server.controller.internal.UpgradeResourceProvider;
 import org.apache.ambari.server.controller.metrics.timeline.cache.TimelineMetricCacheEntryFactory;
 import org.apache.ambari.server.controller.metrics.timeline.cache.TimelineMetricCacheProvider;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheEntryFactory;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheProvider;
 import org.apache.ambari.server.controller.spi.ResourceProvider;
 import org.apache.ambari.server.controller.utilities.KerberosChecker;
 import org.apache.ambari.server.notifications.DispatchFactory;
@@ -100,13 +103,16 @@ import org.apache.ambari.server.state.ConfigFactory;
 import org.apache.ambari.server.state.ConfigImpl;
 import org.apache.ambari.server.state.Host;
 import org.apache.ambari.server.state.Service;
+import org.apache.ambari.server.state.ServiceGroup;
 import org.apache.ambari.server.state.ServiceComponent;
 import org.apache.ambari.server.state.ServiceComponentFactory;
 import org.apache.ambari.server.state.ServiceComponentHost;
 import org.apache.ambari.server.state.ServiceComponentHostFactory;
 import org.apache.ambari.server.state.ServiceComponentImpl;
 import org.apache.ambari.server.state.ServiceFactory;
+import org.apache.ambari.server.state.ServiceGroupFactory;
 import org.apache.ambari.server.state.ServiceImpl;
+import org.apache.ambari.server.state.ServiceGroupImpl;
 import org.apache.ambari.server.state.cluster.ClusterFactory;
 import org.apache.ambari.server.state.cluster.ClusterImpl;
 import org.apache.ambari.server.state.cluster.ClustersImpl;
@@ -361,6 +367,8 @@ public class ControllerModule extends AbstractModule {
     bind(ViewInstanceHandlerList.class).to(AmbariHandlerList.class);
     bind(TimelineMetricCacheProvider.class);
     bind(TimelineMetricCacheEntryFactory.class);
+    bind(ServiceGroupCacheProvider.class);
+    bind(ServiceGroupCacheEntryFactory.class);
     bind(SecurityConfigurationFactory.class).in(Scopes.SINGLETON);
 
     bind(PersistedState.class).to(PersistedStateImpl.class);
@@ -424,11 +432,14 @@ public class ControllerModule extends AbstractModule {
         Host.class, HostImpl.class).build(HostFactory.class));
     install(new FactoryModuleBuilder().implement(
         Service.class, ServiceImpl.class).build(ServiceFactory.class));
+    install(new FactoryModuleBuilder().implement(
+        ServiceGroup.class, ServiceGroupImpl.class).build(ServiceGroupFactory.class));
 
     install(new FactoryModuleBuilder()
         .implement(ResourceProvider.class, Names.named("host"), HostResourceProvider.class)
         .implement(ResourceProvider.class, Names.named("hostComponent"), HostComponentResourceProvider.class)
         .implement(ResourceProvider.class, Names.named("service"), ServiceResourceProvider.class)
+        .implement(ResourceProvider.class, Names.named("servicegroup"), ServiceGroupResourceProvider.class)
         .implement(ResourceProvider.class, Names.named("component"), ComponentResourceProvider.class)
         .implement(ResourceProvider.class, Names.named("member"), MemberResourceProvider.class)
         .implement(ResourceProvider.class, Names.named("repositoryVersion"), RepositoryVersionResourceProvider.class)

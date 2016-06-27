@@ -38,6 +38,7 @@ App.MainMenuView = Em.CollectionView.extend({
         if (!App.get('isOnlyViewUser')) {
           result.push(
               {label: Em.I18n.t('menu.item.dashboard'), routing: 'dashboard', active: 'active'},
+              {label: Em.I18n.t('menu.item.appStore'), routing: 'assemblies'},
               {label: Em.I18n.t('menu.item.services'), routing: 'services'},
               {label: Em.I18n.t('menu.item.hosts'), routing: 'hosts'},
               {label: Em.I18n.t('menu.item.alerts'), routing: 'alerts'}
@@ -65,13 +66,13 @@ App.MainMenuView = Em.CollectionView.extend({
 
     active: function () {
       if (App.get('clusterName') && App.router.get('clusterController.isLoaded')) {
-        var last_url = App.router.location.lastSetURL || location.href.replace(/^[^#]*#/, '');
-        if (last_url.substr(1, 4) !== 'main' || !this._childViews) {
+        var lastUrl = App.router.location.lastSetURL || location.href.replace(/^[^#]*#/, '');
+        if (lastUrl.substr(1, 4) !== 'main' || !this._childViews) {
           return;
         }
         var reg = /^\/main\/([a-z]+)/g;
-        var sub_url = reg.exec(last_url);
-        var chunk = (null != sub_url) ? sub_url[1] : 'dashboard';
+        var subUrl = reg.exec(lastUrl);
+        var chunk = (null != subUrl) ? subUrl[1] : 'dashboard';
         return this.get('content.routing').indexOf(chunk) === 0 ? "active" : "";
       }
       return "";
@@ -103,7 +104,7 @@ App.MainMenuView = Em.CollectionView.extend({
       var itemName = this.get('content').routing;
       var categories = [];
       // create dropdown categories for each menu item
-      if (itemName == 'admin') {
+      if (itemName === 'admin') {
         categories = [];
         if(App.isAuthorized('CLUSTER.VIEW_STACK_DETAILS, CLUSTER.UPGRADE_DOWNGRADE_STACK') || (App.get('upgradeInProgress') || App.get('upgradeHolding'))) {
           categories.push({
@@ -112,7 +113,7 @@ App.MainMenuView = Em.CollectionView.extend({
             label: Em.I18n.t('admin.stackUpgrade.title')
           });
         }
-        if(App.isAuthorized('AMBARI.SET_SERVICE_USERS_GROUPS') ||  (App.get('upgradeInProgress') || App.get('upgradeHolding'))) {
+        if(App.isAuthorized('AMBARI.SET_SERVICE_USERS_GROUPS') ||  App.get('upgradeInProgress') || App.get('upgradeHolding')) {
           categories.push({
             name: 'adminServiceAccounts',
             url: 'serviceAccounts',
@@ -126,7 +127,7 @@ App.MainMenuView = Em.CollectionView.extend({
             label: Em.I18n.t('common.kerberos')
           });
         }
-        if (App.isAuthorized('SERVICE.START_STOP, CLUSTER.MODIFY_CONFIGS') || (App.get('upgradeInProgress') || App.get('upgradeHolding'))) {
+        if (App.isAuthorized('SERVICE.START_STOP, CLUSTER.MODIFY_CONFIGS') || App.get('upgradeInProgress') || App.get('upgradeHolding')) {
           if (App.supports.serviceAutoStart) {
             categories.push({
               name: 'serviceAutoStart',
@@ -137,7 +138,7 @@ App.MainMenuView = Em.CollectionView.extend({
         }
       }
       return categories;
-    }.property(''),
+    }.property(),
 
     AdminDropdownItemView: Ember.View.extend({
       tagName: 'li',

@@ -132,7 +132,7 @@ public class RecoveryConfigHelperTest {
   public void testServiceComponentInstalled()
       throws AmbariException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
 
     hdfs.addServiceComponent(DATANODE).setRecoveryEnabled(true);
@@ -168,7 +168,7 @@ public class RecoveryConfigHelperTest {
   public void testServiceComponentUninstalled()
       throws AmbariException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
 
     hdfs.addServiceComponent(DATANODE).setRecoveryEnabled(true);
@@ -206,7 +206,7 @@ public class RecoveryConfigHelperTest {
   public void testClusterEnvConfigChanged()
       throws AmbariException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
 
     hdfs.addServiceComponent(DATANODE).setRecoveryEnabled(true);
@@ -246,7 +246,7 @@ public class RecoveryConfigHelperTest {
   public void testMaintenanceModeChanged()
       throws AmbariException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
 
     hdfs.addServiceComponent(DATANODE).setRecoveryEnabled(true);
@@ -283,7 +283,7 @@ public class RecoveryConfigHelperTest {
   public void testServiceComponentRecoveryChanged()
       throws AmbariException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
 
     hdfs.addServiceComponent(DATANODE).setRecoveryEnabled(true);
@@ -326,7 +326,7 @@ public class RecoveryConfigHelperTest {
     Cluster cluster = getDummyCluster(hostNames);
 
     // Add HDFS service with DATANODE component to the cluster
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
 
     hdfs.addServiceComponent(DATANODE).setRecoveryEnabled(true);

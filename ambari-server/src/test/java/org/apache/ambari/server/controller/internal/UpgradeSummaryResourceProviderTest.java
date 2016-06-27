@@ -175,7 +175,7 @@ public class UpgradeSummaryResourceProviderTest {
     clusters.mapHostToCluster("h1", "c1");
 
     // add a single ZOOKEEPER server
-    Service service = cluster.addService("ZOOKEEPER");
+    Service service = cluster.addService("ZOOKEEPER", "ZOOKEEPER", "CORE");
     service.setDesiredStackVersion(cluster.getDesiredStackVersion());
     service.persist();
 

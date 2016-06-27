@@ -100,9 +100,11 @@ require('views/common/assign_master_components_view');
 require('views/common/helpers/format_word_break_view');
 require('views/common/helpers/format_null_view');
 require('views/common/helpers/format_role_view');
+require('views/common/helpers/nl2br_view');
 require('views/common/helpers/pluralize_view');
 require('views/common/helpers/status_icon_view');
 require('views/common/chosen_plugin');
+require('views/common/collapsible_view');
 require('views/common/export_metrics_menu_view');
 require('views/login');
 require('views/main');
@@ -306,6 +308,23 @@ require('views/main/service/info/metrics/flume/jvm_threads_runnable');
 require('views/main/service/info/metrics/flume/cpu_user');
 require('views/main/service/info/metrics/flume/flume_metric_graph');
 require('views/main/service/info/metrics/flume/flume_metric_graphs');
+
+require('views/main/assemblies/apps_row_view');
+require('views/main/assemblies_view');
+require('views/main/assemblies/categories_view');
+require('views/main/assemblies/collections_view');
+require('views/main/assemblies/service_groups_view');
+require('views/main/assemblies/categories/category_view');
+require('views/main/assemblies/collections/collection_view');
+require('views/main/assemblies/service_groups/service_group_view');
+require('views/main/assemblies/service_groups/configs_view');
+require('views/main/assemblies/service_groups/summary_view');
+require('views/main/assemblies/service_groups/menu_view');
+require('views/main/assemblies/service_groups/detailed_info_view');
+require('views/main/assemblies/store_app_block_view');
+require('views/main/assemblies/active_store_app_view');
+require('views/main/assemblies/deploy_store_app/deploy_store_app_view');
+
 
 require('views/main/service/add_view');
 require('views/main/service/reassign_view');

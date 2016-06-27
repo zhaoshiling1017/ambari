@@ -88,8 +88,8 @@ public class DatabaseChecker {
         if (serviceDesiredStateEntity == null) {
           checkPassed = false;
           LOG.error(String.format("ServiceDesiredStateEntity is null for " +
-              "ServiceComponentDesiredStateEntity, clusterName=%s, serviceName=%s ",
-            clusterEntity.getClusterName(), clusterServiceEntity.getServiceName()));
+              "ServiceComponentDesiredStateEntity, clusterName=%s, serviceName=%s, stackServiceName=%s ",
+            clusterEntity.getClusterName(), clusterServiceEntity.getServiceName(), clusterServiceEntity.getStackServiceName()));
         }
         Collection<ServiceComponentDesiredStateEntity> scDesiredStateEntities =
           clusterServiceEntity.getServiceComponentDesiredStateEntities();
@@ -97,8 +97,8 @@ public class DatabaseChecker {
           scDesiredStateEntities.isEmpty()) {
           checkPassed = false;
           LOG.error(String.format("serviceComponentDesiredStateEntities is null or empty for " +
-              "ServiceComponentDesiredStateEntity, clusterName=%s, serviceName=%s ",
-            clusterEntity.getClusterName(), clusterServiceEntity.getServiceName()));
+              "ServiceComponentDesiredStateEntity, clusterName=%s, serviceName=%s, stackServiceName=%s ",
+            clusterEntity.getClusterName(), clusterServiceEntity.getServiceName(), clusterServiceEntity.getStackServiceName()));
         } else {
           for (ServiceComponentDesiredStateEntity scDesiredStateEnity : scDesiredStateEntities) {
 
@@ -227,22 +227,24 @@ public class DatabaseChecker {
             for (ClusterServiceEntity clusterServiceEntity : clusterServiceEntities) {
               if (!State.INIT.equals(clusterServiceEntity.getServiceDesiredStateEntity().getDesiredState())) {
                 String serviceName = clusterServiceEntity.getServiceName();
-                ServiceInfo serviceInfo = ambariMetaInfo.getService(stack.getName(), stack.getVersion(), serviceName);
+                String stackServiceName = clusterServiceEntity.getStackServiceName();
+                String serviceGroupName = clusterServiceEntity.getServiceGroupName();
+                ServiceInfo serviceInfo = ambariMetaInfo.getService(stack.getName(), stack.getVersion(), stackServiceName);
                 for (String configTypeName : serviceInfo.getConfigTypeAttributes().keySet()) {
                   if (selectedCountForType.get(configTypeName) == null) {
                     checkPassed = false;
-                    LOG.error("ClusterConfigMapping does not contain mapping for service=" + serviceName + " type_name="
-                        + configTypeName);
+                    LOG.error("ClusterConfigMapping does not contain mapping for serviceName=" + serviceName
+                        + " stackServiceName=" + stackServiceName +  " serviceGroupName=" + serviceGroupName + " type_name=" + configTypeName);
                   } else {
                     // Check that for each config type exactly one is selected
                     if (selectedCountForType.get(configTypeName) == 0) {
                       checkPassed = false;
-                      LOG.error("ClusterConfigMapping selected count is 0 for service=" + serviceName + " type_name="
-                          + configTypeName);
+                      LOG.error("ClusterConfigMapping selected count is 0 for serviceName=" + serviceName
+                          + " stackServiceName=" + stackServiceName +  " serviceGroupName=" + serviceGroupName + " type_name=" + configTypeName);
                     } else if (selectedCountForType.get(configTypeName) > 1) {
                       checkPassed = false;
-                      LOG.error("ClusterConfigMapping selected count is more than 1 for service=" + serviceName
-                          + " type_name=" + configTypeName);
+                      LOG.error("ClusterConfigMapping selected count is more than 1 for serviceName=" + serviceName
+                          + " stackServiceName=" + stackServiceName +  " serviceGroupName=" + serviceGroupName + " type_name="+ configTypeName);
                     }
                   }
                 }

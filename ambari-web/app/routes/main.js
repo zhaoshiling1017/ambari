@@ -17,7 +17,6 @@
  */
 
 var App = require('app');
-var stringUtils = require('utils/string_utils');
 
 module.exports = Em.Route.extend(App.RouterRedirections, {
   route: '/main',
@@ -79,18 +78,6 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
       }
     });
   },
-  /*
-   routePath: function(router,event) {
-   if (router.getAuthenticated()) {
-   App.router.get('clusterController').loadClusterName(false);
-   router.get('mainController').initialize();
-   // TODO: redirect to last known state
-   } else {
-   Ember.run.next(function () {
-   router.transitionTo('login');
-   });
-   }
-   }, */
 
   index: Ember.Route.extend({
     route: '/',
@@ -187,6 +174,151 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
   views: require('routes/views'),
   view: require('routes/view'),
 
+  assemblies: Em.Route.extend({
+    route: '/assemblies',
+
+    connectOutlets: function(router) {
+      router.get('mainController').connectOutlet('mainAssemblies');
+    },
+
+    index: Em.Route.extend({
+      route: '/',
+      enter: function (router) {
+        router.transitionTo('categories.index');
+      }
+    }),
+
+    categories: Em.Route.extend({
+      exit: function () {
+        App.StoreCategory.find().setEach('isActive', false);
+      },
+      route: '/categories',
+      index: Em.Route.extend({
+        route: '/',
+        enter: function (router) {
+          Em.run.next(function () {
+            var storeCategories = App.StoreCategory.find();
+            storeCategories.setEach('isActive', false);
+            var storeCategory = storeCategories.findProperty('name', 'All');
+            storeCategory.set('isActive',true);
+            router.transitionTo('categories.details', storeCategory);
+          });
+        },
+        connectOutlets: function (router) {
+          var controller = router.get('mainAssembliesController');
+          controller.set('showFilterString', true);
+          controller.connectOutlet('mainAssembliesCategories');
+        }
+      }),
+
+      details: Em.Route.extend({
+        route: '/:store_category_id',
+        connectOutlets: function (router, store_category) {
+          router.get('mainController').dataLoading().done(function () {
+            App.StoreCategory.find().setEach('isActive', false);
+            store_category.set('isActive', true);
+            router.get('mainAssembliesController').connectOutlet('mainAssembliesCategory', store_category);
+            router.get('mainAssembliesCategoryController').propertyDidChange('filteredStoreApps');
+          });
+        }
+      })
+    }),
+
+    collections: Em.Route.extend({
+      exit: function () {
+        App.StoreCollection.find().setEach('isActive', false);
+      },
+      route: '/collections',
+      index: Em.Route.extend({
+        route: '/',
+        connectOutlets: function (router) {
+          var controller = router.get('mainAssembliesController');
+          controller.set('showFilterString', true);
+          controller.connectOutlet('mainAssembliesCollections');
+        }
+      }),
+
+      details: Em.Route.extend({
+        route: '/:store_collection_id',
+        connectOutlets: function (router, store_collection) {
+          App.StoreCollection.find().setEach('isActive', false);
+          store_collection.set('isActive', true);
+          router.get('mainAssembliesController').connectOutlet('mainAssembliesCollection', store_collection);
+          router.get('mainAssembliesCollectionController').propertyDidChange('filteredStoreApps');
+        }
+      })
+    }),
+
+    serviceGroups: Em.Route.extend({
+      route: '/service-groups',
+      enter: function (router) {
+        router.get('mainAssembliesController').set('showFilterString', false);
+      },
+      exit: function (router) {
+        App.ServiceGroup.find().setEach('isActive', false);
+        router.get('mainAssembliesController').set('showFilterString', true);
+      },
+      index: Em.Route.extend({
+        route: '/',
+        connectOutlets: function (router) {
+          router.get('mainAssembliesController').connectOutlet('mainAssembliesServiceGroups');
+        }
+      }),
+      details: Em.Route.extend({
+        route: '/:service_group_id',
+
+        connectOutlets: function (router, service_group) {
+          router.get('mainController').dataLoading().done(function () {
+            var serviceGroup = App.ServiceGroup.find(service_group.get('id'));
+            router.get('mainAssembliesController').connectOutlet('mainAssembliesServiceGroup', serviceGroup);
+              router.transitionTo('summary');
+          });
+        },
+
+        index: Em.Route.extend({
+          route: '/'
+        }),
+
+        summary: Em.Route.extend({
+          route: '/summary',
+          connectOutlets: function (router) {
+            router.get('mainController').dataLoading().done(function () {
+              var serviceGroup =  router.get('mainAssembliesServiceGroupController.content');
+              var assembliesController = App.router.get('mainAssembliesController');
+              assembliesController.set('activeServiceGroupId', serviceGroup.get('id'));
+              Em.run.later(function () {
+                var appStoreEl = $("#apps-store");
+                if (appStoreEl) {
+                  assembliesController.closeNonServiceGroupsPanels();
+                  var deployedAssembliesEl = appStoreEl.find("#manage-deployed-assemblies-label");
+                  var deployedAssembliesContent = appStoreEl.find("#manage-deployed-assemblies-content");
+                  if (!deployedAssembliesContent.hasClass('in')) {
+                    deployedAssembliesEl.trigger('click');
+                  }
+                }
+              }, 1500);
+              router.get('mainAssembliesServiceGroupController').connectOutlet('mainAssembliesServiceGroupSummary', serviceGroup);
+            });
+          }
+        }),
+
+        settings: Em.Route.extend({
+          route: '/settings',
+          connectOutlets: function (router) {
+            router.get('mainAssembliesServiceGroupController').connectOutlet('mainAssembliesServiceGroupConfigs', router.get('mainAssembliesServiceGroupController.content'));
+          }
+        }),
+
+        detailedInfo: Em.Route.extend({
+          route: '/detailed-info',
+          connectOutlets: function (router) {
+            router.get('mainAssembliesServiceGroupController').connectOutlet('mainAssembliesServiceGroupDetailedInfo', router.get('mainAssembliesServiceGroupController.content'));
+          }
+        })
+      })
+    })
+
+  }),
 
   hosts: Em.Route.extend({
     route: '/hosts',
@@ -642,18 +774,24 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
     service: Em.Route.extend({
       route: '/:service_id',
       connectOutlets: function (router, service) {
-        router.get('mainServiceController').connectOutlet('mainServiceItem', service);
-        if (service.get('isLoaded')) {
-          if (router.get('mainServiceItemController').get('routeToConfigs')) {
-            router.transitionTo('configs');
-          } else if (router.get('mainServiceItemController.routeToHeatmaps')) {
-            router.transitionTo('heatmaps');
+        var controller = router.get('mainController');
+        controller.dataLoading().done(function () {
+          var mainServiceController = router.get('mainServiceController');
+          var serviceGroup = App.ServiceGroup.find().findProperty('id', service.get('serviceGroupName'));
+          mainServiceController.set('serviceGroup', serviceGroup);
+          router.get('mainServiceController').connectOutlet('mainServiceItem', service);
+          if (service.get('isLoaded')) {
+            if (router.get('mainServiceItemController').get('routeToConfigs')) {
+              router.transitionTo('configs');
+            } else if (router.get('mainServiceItemController.routeToHeatmaps')) {
+              router.transitionTo('heatmaps');
+            } else {
+              router.transitionTo('summary');
+            }
           } else {
-            router.transitionTo('summary');
+            router.transitionTo('index');
           }
-        } else {
-          router.transitionTo('index');
-        }
+        });
       },
       index: Ember.Route.extend({
         route: '/'
@@ -661,15 +799,18 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
       summary: Em.Route.extend({
         route: '/summary',
         connectOutlets: function (router, context) {
-          App.loadTimer.start('Service Summary Page');
-          var item = router.get('mainServiceItemController.content');
-          if (router.get('clusterController.isServiceMetricsLoaded')) router.get('updateController').updateServiceMetric(Em.K);
-          //if service is not existed then route to default service
-          if (item.get('isLoaded')) {
-            router.get('mainServiceItemController').connectOutlet('mainServiceInfoSummary', item);
-          } else {
-            router.transitionTo('services.index');
-          }
+          var controller = router.get('mainController');
+          controller.dataLoading().done(function () {
+            App.loadTimer.start('Service Summary Page');
+            var item = router.get('mainServiceItemController.content');
+            if (router.get('clusterController.isServiceMetricsLoaded')) router.get('updateController').updateServiceMetric(Em.K);
+            //if service is not existed then route to default service
+            if (item.get('isLoaded')) {
+              router.get('mainServiceItemController').connectOutlet('mainServiceInfoSummary', item);
+            } else {
+              router.transitionTo('services.index');
+            }
+          });
         }
       }),
       metrics: Em.Route.extend({
@@ -773,7 +914,8 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
     router.transitionTo('hosts.hostDetails.index', event.context);
   },
   filterHosts: function (router, component) {
-    if (!component.context)
+    var serviceGroupName = component.context.get('service.serviceGroupName');
+    if (!component.context || (serviceGroupName && serviceGroupName !== 'CORE'))
       return;
     router.get('mainHostController').filterByComponent(component.context);
     router.get('mainHostController').set('showFilterConditionsFirstLoad', true);
@@ -781,9 +923,11 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
     router.transitionTo('hosts.index');
   },
   showDetails: function (router, event) {
-    router.get('mainHostDetailsController').set('referer', router.location.lastSetURL);
-    router.get('mainHostDetailsController').set('isFromHosts', true);
-    router.transitionTo('hosts.hostDetails.summary', event.context);
+    if (event.context && App.Host.find().mapProperty('id').contains(event.context.get('id'))) {
+      router.get('mainHostDetailsController').set('referer', router.location.lastSetURL);
+      router.get('mainHostDetailsController').set('isFromHosts', true);
+      router.transitionTo('hosts.hostDetails.summary', event.context);
+    }
   },
   gotoAlertDetails: function (router, event) {
     router.transitionTo('alerts.alertDetails', event.context);

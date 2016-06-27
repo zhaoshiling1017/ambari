@@ -18,6 +18,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -47,7 +48,7 @@ public class ActiveWidgetLayoutServiceTest {
 
   private class TestActiveWidgetLayoutService extends ActiveWidgetLayoutService {
     public TestActiveWidgetLayoutService(String username) {
-      super(username);
+      super(ApiVersion.v1, username);
     }
 
     @Override

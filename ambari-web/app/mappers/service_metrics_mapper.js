@@ -36,7 +36,10 @@ App.serviceMetricsMapper = App.QuickDataMapper.create({
     installed_clients: 'installed_clients',
     client_components: 'client_components',
     slave_components: 'slave_components',
-    master_components: 'master_components'
+    master_components: 'master_components',
+    stack_service_name: 'ServiceInfo.stack_service_name',
+    service_group_name: 'ServiceInfo.service_group_name',
+    service_group_id: 'ServiceInfo.service_group_name'
   },
   hdfsConfig: {
     version: 'nameNodeComponent.host_components[0].metrics.dfs.namenode.Version',
@@ -203,6 +206,7 @@ App.serviceMetricsMapper = App.QuickDataMapper.create({
           previousComponentPassiveStates[host_component.id] = host_component.HostRoles.maintenance_state;
           this.config3.ha_status = host_component.HostRoles.component_name == "HBASE_MASTER" ?
             'metrics.hbase.master.IsActiveMaster' : 'HostRoles.ha_state';
+          host_component.HostRoles.display_name = component.ServiceComponentInfo.display_name;
           var comp = this.parseIt(host_component, this.config3);
           comp.id = id;
           comp.service_id = serviceName;
@@ -248,7 +252,7 @@ App.serviceMetricsMapper = App.QuickDataMapper.create({
       }, this);
 
       var stackServices = App.StackService.find().mapProperty('serviceName');
-      result = misc.sortByOrder(stackServices, result);
+      result = misc.sortByOrder(stackServices, result, 'stack_service_name');
 
       //load services to model
       App.store.loadMany(this.get('model'), result);
@@ -356,7 +360,9 @@ App.serviceMetricsMapper = App.QuickDataMapper.create({
           }
         } else if (hostComponent.component_name === 'HBASE_MASTER') {
           if (hostComponent.work_status === 'STARTED') {
-            (hostComponent.ha_status === true || hostComponent.ha_status == 'true') ?
+            //@TODO: Remove below consition when ambari-server supports returning HBase master HA status for assemblies
+            var isNoneCoreService = !App.StackService.find().mapProperty('serviceName').contains(hostComponent.service_id);
+            (hostComponent.ha_status === true || hostComponent.ha_status == 'true' || isNoneCoreService) ?
               hostComponent.display_name_advanced = this.t('dashboard.services.hbase.masterServer.active') :
               hostComponent.display_name_advanced = this.t('dashboard.services.hbase.masterServer.standby');
           } else {

@@ -52,7 +52,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/jobhistory")
 public class WorkflowJsonService {
   private static final String PREFIX = "eventdb.";
   private static final String HOSTNAME = PREFIX + "db.hostname";

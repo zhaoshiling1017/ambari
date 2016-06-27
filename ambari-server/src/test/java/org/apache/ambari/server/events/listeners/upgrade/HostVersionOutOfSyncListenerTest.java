@@ -454,7 +454,7 @@ public class HostVersionOutOfSyncListenerTest {
                           ) throws AmbariException {
     StackId stackIdObj = new StackId(stackId);
     cl.setDesiredStackVersion(stackIdObj);
-    cl.addService(serviceName);
+    cl.addService(serviceName, serviceName, "CORE");
 
     for (Map.Entry<String, List<Integer>> component : topology.entrySet()) {
 
@@ -470,7 +470,7 @@ public class HostVersionOutOfSyncListenerTest {
       }
 
       ServiceInstalledEvent event = new ServiceInstalledEvent(cl.getClusterId(),
-          stackIdObj.getStackName(), stackIdObj.getStackVersion(), serviceName);
+          stackIdObj.getStackName(), stackIdObj.getStackVersion(), serviceName, serviceName, "CORE");
       m_eventPublisher.publish(event);
     }
   }
@@ -487,7 +487,7 @@ public class HostVersionOutOfSyncListenerTest {
           .getServiceComponent(componentName), hostName));
       ServiceComponentInstalledEvent event = new ServiceComponentInstalledEvent(cl.getClusterId(),
           stackIdObj.getStackName(), stackIdObj.getStackVersion(),
-          serviceName, componentName, hostName, false /* recovery not enabled */);
+          serviceName, serviceName, "CORE", componentName, hostName, false /* recovery not enabled */);
       m_eventPublisher.publish(event);
     }
   }

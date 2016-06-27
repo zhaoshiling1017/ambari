@@ -54,11 +54,13 @@ module.exports = {
     return ((((((+d[0])*256)+(+d[1]))*256)+(+d[2]))*256)+(+d[3]);
   },
 
-  sortByOrder: function (sortOrder, array) {
+  sortByOrder: function (sortOrder, array, sortByParam) {
+    sortByParam = sortByParam || 'stackServiceName';
     var sorted = [];
     for (var i = 0; i < sortOrder.length; i++)
       for (var j = 0; j < array.length; j++) {
-        if (sortOrder[i] == Em.get(array[j], 'id')) {
+        var value = Em.get(array[j], sortByParam) || Em.get(array[j], 'stack_service_name') || Em.get(array[j], 'id');
+        if (sortOrder[i] == value) {
           sorted.push(array[j]);
         }
       }

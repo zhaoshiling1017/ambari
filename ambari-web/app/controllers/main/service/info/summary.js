@@ -803,7 +803,7 @@ App.MainServiceInfoSummaryController = Em.Controller.extend(App.WidgetSectionMix
           var view = this;
           var services = App.Service.find().filter(function(item){
             var stackService =  App.StackService.find().findProperty('serviceName', item.get('serviceName'));
-            return stackService.get('isServiceWithWidgets');
+            return stackService.get('isServiceWithWidgets') && item.get('serviceGroupName') === 'CORE';
           });
           return services.map(function (service) {
             return Em.Object.create({

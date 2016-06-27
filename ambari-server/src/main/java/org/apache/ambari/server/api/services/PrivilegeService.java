@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,6 +38,10 @@ import javax.ws.rs.core.UriInfo;
  * Service responsible for privilege requests.
  */
 public abstract class PrivilegeService extends BaseService {
+
+  public PrivilegeService(ApiVersion apiVersion) {
+    super(apiVersion);
+  }
 
   /**
    * Handles: GET /privileges/{privilegeID}

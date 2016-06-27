@@ -21,6 +21,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
@@ -68,7 +69,7 @@ public class ClusterPrivilegeServiceTest extends BaseServiceTest {
   private class TestClusterPrivilegeService extends ClusterPrivilegeService {
 
     private TestClusterPrivilegeService(String clusterName) {
-      super(clusterName);
+      super(ApiVersion.v1, clusterName);
     }
 
     @Override

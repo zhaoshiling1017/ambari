@@ -98,7 +98,7 @@ public class ServiceComponentTest {
     cluster.createClusterVersion(stackId, stackId.getStackVersion(), "admin",
         RepositoryVersionState.INSTALLING);
 
-    Service s = serviceFactory.createNew(cluster, serviceName);
+    Service s = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
     cluster.addService(s);
     s.persist();
     service = cluster.getService(serviceName);

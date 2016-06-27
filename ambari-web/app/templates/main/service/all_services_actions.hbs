@@ -24,39 +24,45 @@
             </a>
             <ul class="pull-left dropdown-menu">
                 {{#isAuthorized "SERVICE.ADD_DELETE_SERVICES"}}
-                    <li {{bindAttr class="view.serviceController.isAllServicesInstalled:disabled"}}>
+                  {{#if view.serviceGroup.isCoreServiceGroup}}
+                    <li {{bindAttr class="view.serviceGroup.isAllServicesInstalled:disabled"}}>
                         <a href="#"
-                            {{bindAttr class="view.serviceController.isAllServicesInstalled:disabled"}}
+                            {{bindAttr class="view.serviceGroup.isAllServicesInstalled:disabled"}}
                             {{action gotoAddService target="view.serviceController"}}>
                             <i class="icon-plus icon-white"></i> {{t services.service.add}}</a>
                     </li>
+                  {{/if}}
                 {{/isAuthorized}}
                 {{#isAuthorized "SERVICE.START_STOP"}}
+                  {{#if view.serviceGroup.isCoreServiceGroup}}
                     <li class="divider"></li>
-                    <li {{bindAttr class="view.serviceController.isStartAllDisabled:disabled" }}>
+                  {{/if}}
+                    <li {{bindAttr class="view.isStartAllDisabled:disabled" }}>
                         <a href="#" data-toggle="modal"
-                            {{bindAttr class="view.serviceController.isStartAllDisabled:disabled" }}
-                            {{action "startAllService" target="view.serviceController"}}>
-                            <i {{bindAttr class=":icon-play view.serviceController.isStartAllDisabled:disabled:enabled " }}></i>
+                            {{bindAttr class="view.isStartAllDisabled:disabled" }}
+                            {{action "startAllService" view.serviceGroup target="view.serviceController"}}>
+                            <i {{bindAttr class=":icon-play view.isStartAllDisabled:disabled:enabled " }}></i>
                             {{t services.service.startAll}}
                         </a>
                     </li>
-                    <li {{bindAttr class="view.serviceController.isStopAllDisabled:disabled" }}>
+                    <li {{bindAttr class="view.isStopAllDisabled:disabled" }}>
                         <a href="#" data-toggle="modal"
-                            {{bindAttr class="view.serviceController.isStopAllDisabled:disabled" }}
-                            {{action "stopAllService" target="view.serviceController"}}>
-                            <i {{bindAttr class=":icon-stop view.serviceController.isStopAllDisabled:disabled:enabled" }}></i>
+                            {{bindAttr class="view.isStopAllDisabled:disabled" }}
+                            {{action "stopAllService" view.serviceGroup target="view.serviceController"}}>
+                            <i {{bindAttr class=":icon-stop view.isStopAllDisabled:disabled:enabled" }}></i>
                             {{t services.service.stopAll}}
                         </a>
                     </li>
-                    <li {{bindAttr class="view.serviceController.isRestartAllRequiredDisabled:disabled" }}>
+                    {{#if view.serviceGroup.isCoreServiceGroup}}
+                      <li {{bindAttr class="view.isRestartAllRequiredDisabled:disabled" }}>
                         <a href="#" data-toggle="modal"
-                            {{bindAttr class="view.serviceController.isRestartAllRequiredDisabled:disabled" }}
-                            {{action "restartAllRequired" target="view.serviceController"}}>
-                            <i {{bindAttr class=":icon-repeat view.serviceController.isRestartAllRequiredDisabled:disabled:enabled" }}></i>
+                            {{bindAttr class="view.isRestartAllRequiredDisabled:disabled" }}
+                            {{action "restartAllRequired" view.serviceGroup target="view.serviceController"}}>
+                            <i {{bindAttr class=":icon-repeat view.isRestartAllRequiredDisabled:disabled:enabled" }}></i>
                             {{t services.service.restartAllRequired}}
                         </a>
-                    </li>
+                      </li>
+                    {{/if}}
                 {{/isAuthorized}}
             </ul>
         </div>

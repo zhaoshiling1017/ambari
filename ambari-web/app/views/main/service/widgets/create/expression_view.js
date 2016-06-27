@@ -116,7 +116,7 @@ App.WidgetWizardExpressionView = Em.View.extend({
   redrawField: function () {
     this.set('expression.data', misc.sortByOrder($(this.get('element')).find('.metric-instance').map(function () {
       return this.id;
-    }), this.get('expression.data')));
+    }), this.get('expression.data'), 'id'));
   },
 
   /**

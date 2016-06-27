@@ -40,7 +40,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.google.inject.Inject;
 
-@Path("/persist/")
 public class PersistKeyValueService {
   private static PersistKeyValueImpl persistKeyVal;
   private static Log LOG = LogFactory.getLog(PersistKeyValueService.class);

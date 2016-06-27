@@ -25,7 +25,7 @@ App.ErrorsHandlerController = Em.Controller.extend(App.UserPref, {
     window.onerror = function (err, url, lineNumber, colNumber, Err) {
       oldError.call(this, err, url, lineNumber, colNumber, Err);
       var ls = localStorage.getObject('errors') || {};
-      if(Object.keys(localStorage.getObject('errors')).length > 25) {
+      if(Object.keys(ls).length > 25) {
         delete ls[Object.keys(ls).sort()[0]];
       }
       var key = new Date().getTime();

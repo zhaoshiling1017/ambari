@@ -28,6 +28,10 @@ public interface Service {
 
   String getName();
 
+  String getStackServiceName();
+
+  String getServiceGroupName();
+
   long getClusterId();
 
   Cluster getCluster();

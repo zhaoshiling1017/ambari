@@ -44,8 +44,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
+import java.net.URL;
+import java.net.HttpURLConnection;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,18 +68,8 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
-import org.apache.ambari.server.AmbariException;
-import org.apache.ambari.server.ClusterNotFoundException;
-import org.apache.ambari.server.DuplicateResourceException;
-import org.apache.ambari.server.HostNotFoundException;
-import org.apache.ambari.server.ObjectNotFoundException;
-import org.apache.ambari.server.ParentObjectNotFoundException;
-import org.apache.ambari.server.Role;
-import org.apache.ambari.server.RoleCommand;
-import org.apache.ambari.server.ServiceComponentHostNotFoundException;
-import org.apache.ambari.server.ServiceComponentNotFoundException;
-import org.apache.ambari.server.ServiceNotFoundException;
-import org.apache.ambari.server.StackAccessException;
+import jline.internal.Log;
+import org.apache.ambari.server.*;
 import org.apache.ambari.server.actionmanager.ActionManager;
 import org.apache.ambari.server.actionmanager.HostRoleCommand;
 import org.apache.ambari.server.actionmanager.RequestFactory;
@@ -87,13 +80,12 @@ import org.apache.ambari.server.agent.ExecutionCommand.KeyNames;
 import org.apache.ambari.server.api.services.AmbariMetaInfo;
 import org.apache.ambari.server.configuration.Configuration;
 import org.apache.ambari.server.configuration.Configuration.DatabaseType;
-import org.apache.ambari.server.controller.internal.RequestOperationLevel;
-import org.apache.ambari.server.controller.internal.RequestResourceFilter;
-import org.apache.ambari.server.controller.internal.RequestStageContainer;
-import org.apache.ambari.server.controller.internal.URLStreamProvider;
-import org.apache.ambari.server.controller.internal.WidgetLayoutResourceProvider;
-import org.apache.ambari.server.controller.internal.WidgetResourceProvider;
+import org.apache.ambari.server.controller.internal.*;
 import org.apache.ambari.server.controller.metrics.timeline.cache.TimelineMetricCacheProvider;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCache;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheKey;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheProvider;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheValue;
 import org.apache.ambari.server.controller.spi.Resource;
 import org.apache.ambari.server.customactions.ActionDefinition;
 import org.apache.ambari.server.metadata.ActionMetadata;
@@ -127,6 +119,7 @@ import org.apache.ambari.server.security.ldap.LdapBatchDto;
 import org.apache.ambari.server.security.ldap.LdapSyncDto;
 import org.apache.ambari.server.serveraction.kerberos.KerberosInvalidConfigurationException;
 import org.apache.ambari.server.serveraction.kerberos.KerberosOperationException;
+import org.apache.ambari.server.serveraction.servicegroup.YarnServiceGroupServerAction;
 import org.apache.ambari.server.stageplanner.RoleGraph;
 import org.apache.ambari.server.stageplanner.RoleGraphFactory;
 import org.apache.ambari.server.state.Cluster;
@@ -154,6 +147,8 @@ import org.apache.ambari.server.state.ServiceComponentHost;
 import org.apache.ambari.server.state.ServiceComponentHostEvent;
 import org.apache.ambari.server.state.ServiceComponentHostFactory;
 import org.apache.ambari.server.state.ServiceFactory;
+import org.apache.ambari.server.state.ServiceGroup;
+import org.apache.ambari.server.state.ServiceGroupFactory;
 import org.apache.ambari.server.state.ServiceInfo;
 import org.apache.ambari.server.state.ServiceOsSpecific;
 import org.apache.ambari.server.state.StackId;
@@ -165,12 +160,11 @@ import org.apache.ambari.server.state.scheduler.RequestExecutionFactory;
 import org.apache.ambari.server.state.stack.RepositoryXml;
 import org.apache.ambari.server.state.stack.WidgetLayout;
 import org.apache.ambari.server.state.stack.WidgetLayoutInfo;
-import org.apache.ambari.server.state.svccomphost.ServiceComponentHostInstallEvent;
-import org.apache.ambari.server.state.svccomphost.ServiceComponentHostStartEvent;
-import org.apache.ambari.server.state.svccomphost.ServiceComponentHostStopEvent;
-import org.apache.ambari.server.state.svccomphost.ServiceComponentHostUpgradeEvent;
+import org.apache.ambari.server.state.svccomphost.*;
+import org.apache.ambari.server.state.UpgradeState;
 import org.apache.ambari.server.utils.SecretReference;
 import org.apache.ambari.server.utils.StageUtils;
+import org.apache.ambari.server.utils.MapUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -189,6 +183,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.google.inject.persist.Transactional;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 @Singleton
 public class AmbariManagementControllerImpl implements AmbariManagementController {
@@ -217,6 +213,8 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
 
   @Inject
   private ServiceFactory serviceFactory;
+  @Inject
+  private ServiceGroupFactory serviceGroupFactory;
   @Inject
   private ServiceComponentFactory serviceComponentFactory;
   @Inject
@@ -266,6 +264,8 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
 
   private MaintenanceStateHelper maintenanceStateHelper;
 
+  private static Map<String, String> componentNameMappings = MapUtils.fillMap("/var/lib/ambari-server/resources/componentsMap.dat");
+
   /**
    * The KerberosHelper to help setup for enabling for disabling Kerberos
    */
@@ -280,6 +280,9 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
 
   final private static int REPO_URL_CONNECT_TIMEOUT = 3000;
   final private static int REPO_URL_READ_TIMEOUT = 2000;
+
+  final private static int DASH_URL_CONNECT_TIMEOUT = 3000;
+  final private static int DASH_URL_READ_TIMEOUT = 2000;
 
   final private String jdkResourceUrl;
   final private String javaHome;
@@ -1121,7 +1124,7 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
           throw new ServiceComponentHostNotFoundException(
               cluster.getClusterName(), null, request.getComponentName(), request.getHostname());
         }
-        request.setServiceName(serviceName);
+//        request.setServiceName(serviceName);
       }
     }
 
@@ -1132,7 +1135,7 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
       services.addAll(cluster.getServices().values());
     }
 
-    Set<ServiceComponentHostResponse> response =
+    Set<ServiceComponentHostResponse> responses =
         new HashSet<ServiceComponentHostResponse>();
 
     boolean checkDesiredState = false;
@@ -1169,7 +1172,7 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
     for (Service s : services) {
       // filter on component name if provided
       Set<ServiceComponent> components = new HashSet<ServiceComponent>();
-      if (request.getComponentName() != null) {
+      if (request.getComponentName() != null && request.getServiceName() != null) {
         components.add(s.getServiceComponent(request.getComponentName()));
       } else {
         components.addAll(s.getServiceComponents().values());
@@ -1187,105 +1190,170 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
         Map<String, ServiceComponentHost> serviceComponentHostMap =
           sc.getServiceComponentHosts();
 
-        if (request.getHostname() != null) {
-          try {
-            if (serviceComponentHostMap == null
-                || !serviceComponentHostMap.containsKey(request.getHostname())) {
-              throw new ServiceComponentHostNotFoundException(cluster.getClusterName(),
-                s.getName(), sc.getName(), request.getHostname());
-            }
+        ServiceGroup sg = null;
+        try {
+          sg = cluster.getServiceGroup(s.getServiceGroupName());
+        } catch (ServiceGroupNotFoundException e) {
+          sg = null;
+        }
 
-            ServiceComponentHost sch = serviceComponentHostMap.get(request.getHostname());
+        if(sg == null || sg.getServiceGroupType().equalsIgnoreCase("AMBARI")) {
+          if (request.getHostname() != null) {
+            try {
+              if (serviceComponentHostMap == null
+                  || !serviceComponentHostMap.containsKey(request.getHostname())) {
+                throw new ServiceComponentHostNotFoundException(cluster.getClusterName(),
+                    s.getName(), sc.getName(), request.getHostname());
+              }
 
-            if (null == sch) {
-              // It's possible that the host was deleted during the time that the request was generated.
-              continue;
-            }
+              ServiceComponentHost sch = serviceComponentHostMap.get(request.getHostname());
 
-            if (checkDesiredState && (desiredStateToCheck != sch.getDesiredState())) {
-              continue;
-            }
-
-            if (checkState && stateToCheck != sch.getState()) {
-              continue;
-            }
-
-            if (request.getAdminState() != null) {
-              String stringToMatch =
-                  sch.getComponentAdminState() == null ? "" : sch.getComponentAdminState().name();
-              if (!request.getAdminState().equals(stringToMatch)) {
+              if (null == sch) {
+                // It's possible that the host was deleted during the time that the request was generated.
                 continue;
               }
+
+              if (checkDesiredState && (desiredStateToCheck != sch.getDesiredState())) {
+                continue;
+              }
+
+              if (checkState && stateToCheck != sch.getState()) {
+                continue;
+              }
+
+              if (request.getAdminState() != null) {
+                String stringToMatch =
+                    sch.getComponentAdminState() == null ? "" : sch.getComponentAdminState().name();
+                if (!request.getAdminState().equals(stringToMatch)) {
+                  continue;
+                }
+              }
+
+              ServiceComponentHostResponse r = sch.convertToResponse();
+              if (null == r || (filterBasedConfigStaleness && r.isStaleConfig() != staleConfig)) {
+                continue;
+              }
+
+              Host host = hosts.get(sch.getHostName());
+              if (host == null) {
+                throw new HostNotFoundException(cluster.getClusterName(), sch.getHostName());
+              }
+
+              r.setMaintenanceState(maintenanceStateHelper.getEffectiveState(sch, host).name());
+              responses.add(r);
+            } catch (ServiceComponentHostNotFoundException e) {
+              if (request.getServiceName() == null || request.getComponentName() == null) {
+                // Ignore the exception if either the service name or component name are not specified.
+                // This is an artifact of how we get host_components and can happen in the case where
+                // we get all host_components for a host, for example.
+                LOG.debug("Ignoring not specified host_component ", e);
+
+              } else {
+                // Otherwise rethrow the exception and let the caller decide if it's an error condition.
+                // Logging the exception as debug since this does not necessarily indicate an error
+                // condition.
+                LOG.debug("ServiceComponentHost not found ", e);
+                throw new ServiceComponentHostNotFoundException(cluster.getClusterName(),
+                    request.getServiceName(), request.getComponentName(), request.getHostname());
+              }
             }
+          } else {
+            for (ServiceComponentHost sch : serviceComponentHostMap.values()) {
+              if (null == sch) {
+                // It's possible that the host was deleted during the time that the request was generated.
+                continue;
+              }
 
-            ServiceComponentHostResponse r = sch.convertToResponse();
-            if (null == r || (filterBasedConfigStaleness && r.isStaleConfig() != staleConfig)) {
-              continue;
-            }
+              if (checkDesiredState && (desiredStateToCheck != sch.getDesiredState())) {
+                continue;
+              }
 
-            Host host = hosts.get(sch.getHostName());
-            if (host == null) {
-              throw new HostNotFoundException(cluster.getClusterName(), sch.getHostName());
-            }
+              if (checkState && stateToCheck != sch.getState()) {
+                continue;
+              }
 
-            r.setMaintenanceState(maintenanceStateHelper.getEffectiveState(sch, host).name());
-            response.add(r);
-          } catch (ServiceComponentHostNotFoundException e) {
-            if (request.getServiceName() == null || request.getComponentName() == null) {
-              // Ignore the exception if either the service name or component name are not specified.
-              // This is an artifact of how we get host_components and can happen in the case where
-              // we get all host_components for a host, for example.
-              LOG.debug("Ignoring not specified host_component ", e);
+              if (request.getAdminState() != null) {
+                String stringToMatch =
+                    sch.getComponentAdminState() == null ? "" : sch.getComponentAdminState().name();
+                if (!request.getAdminState().equals(stringToMatch)) {
+                  continue;
+                }
+              }
 
-            } else {
-              // Otherwise rethrow the exception and let the caller decide if it's an error condition.
-              // Logging the exception as debug since this does not necessarily indicate an error
-              // condition.
-              LOG.debug("ServiceComponentHost not found ", e);
-              throw new ServiceComponentHostNotFoundException(cluster.getClusterName(),
-                  request.getServiceName(), request.getComponentName(), request.getHostname());
+              ServiceComponentHostResponse r = sch.convertToResponse();
+              if (null == r || (filterBasedConfigStaleness && r.isStaleConfig() != staleConfig)) {
+                continue;
+              }
+
+              Host host = hosts.get(sch.getHostName());
+              if (host == null) {
+                throw new HostNotFoundException(cluster.getClusterName(), sch.getHostName());
+              }
+
+              r.setMaintenanceState(maintenanceStateHelper.getEffectiveState(sch, host).name());
+              responses.add(r);
             }
           }
         } else {
-          for (ServiceComponentHost sch : serviceComponentHostMap.values()) {
-            if (null == sch) {
-              // It's possible that the host was deleted during the time that the request was generated.
-              continue;
-            }
+          ServiceGroupCache cache = getServiceGroupCacheProvider().getServiceGroupCache();
+          int desiredCount = sc.getDesiredCount();
+          String clusterName = sc.getClusterName();
+          String serviceName = sc.getServiceName();
+          String componentName = sc.getName();
+          String mappedComponentName = componentNameMappings.containsKey(componentName)?
+              componentNameMappings.get(componentName) : componentName;
+          String displayName = componentName;
+          HostComponentAdminState adminState = HostComponentAdminState.INSERVICE;
+          String stackVersion = "";
+          String desiredStackVersion = "";
+          String desiredState = sc.isClientComponent()? State.INSTALLED.toString(): State.STARTED.toString();
+          int totalCount = 0;
 
-            if (checkDesiredState && (desiredStateToCheck != sch.getDesiredState())) {
-              continue;
-            }
+          ServiceGroupCacheKey cacheKey = new ServiceGroupCacheKey(sg.getName());
+          Map<String, Object> responseMap = null;
+          try {
+            responseMap = cache.getResponseFromCache(cacheKey);
+          } catch (Exception e) {
+            Log.info("Hit exception when retrieving service group from cache. Exception: " + e.getMessage());
+          }
 
-            if (checkState && stateToCheck != sch.getState()) {
-              continue;
-            }
+          if(responseMap != null && responseMap.containsKey("containers")) {
+            for(Map<String, String> cMap : (ArrayList<Map<String, String>>) responseMap.get("containers")) {
+              String dashContainerName = cMap.get("id");
+              String dashComponentName = cMap.get("component_name");
+              String dashState = cMap.get("state");
+              String dashHostName = cMap.get("hostname");
+              String dashBareHostName = cMap.get("bare_host");
 
-            if (request.getAdminState() != null) {
-              String stringToMatch =
-                  sch.getComponentAdminState() == null ? "" : sch.getComponentAdminState().name();
-              if (!request.getAdminState().equals(stringToMatch)) {
-                continue;
+              if (dashComponentName.contains(mappedComponentName)) {
+                String liveState = State.INSTALLED.toString();
+                if(dashState.equalsIgnoreCase("READY")) {
+                  liveState = sc.isClientComponent()? State.INSTALLED.toString() : State.STARTED.toString();
+                }
+                ServiceComponentHostResponse r = new ServiceComponentHostResponse(clusterName, serviceName, componentName,
+                    displayName, dashHostName, liveState, stackVersion, desiredState, desiredStackVersion, adminState,
+                    dashBareHostName, dashContainerName);
+                r.setUpgradeState(UpgradeState.NONE);
+                r.setMaintenanceState(MaintenanceState.OFF.name());
+                responses.add(r);
+                totalCount++;
               }
             }
-
-            ServiceComponentHostResponse r = sch.convertToResponse();
-            if (null == r || (filterBasedConfigStaleness && r.isStaleConfig() != staleConfig)) {
-              continue;
+          }
+          if(totalCount < desiredCount) {
+            while(totalCount < desiredCount) {
+              ServiceComponentHostResponse r = new ServiceComponentHostResponse(clusterName, serviceName, componentName,
+                  displayName, "", State.INIT.toString(), stackVersion, desiredState, desiredStackVersion, adminState);
+              r.setUpgradeState(UpgradeState.NONE);
+              r.setMaintenanceState(MaintenanceState.OFF.name());
+              responses.add(r);
+              totalCount++;
             }
-
-            Host host = hosts.get(sch.getHostName());
-            if (host == null) {
-              throw new HostNotFoundException(cluster.getClusterName(), sch.getHostName());
-            }
-
-            r.setMaintenanceState(maintenanceStateHelper.getEffectiveState(sch, host).name());
-            response.add(r);
           }
         }
       }
     }
-    return response;
+    return responses;
   }
 
   @Override
@@ -2380,6 +2448,61 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
     }
   }
 
+
+  private RequestStageContainer doStageCreationForServiceGroups(RequestStageContainer requestStages, Cluster cluster,
+      Map<State, List<ServiceGroup>> changedServiceGroups, Map<String, String> requestParameters,
+      Map<String, String> requestProperties)
+      throws AmbariException {
+
+    if (changedServiceGroups == null || changedServiceGroups.isEmpty()) {
+      LOG.debug("Created 0 stages");
+      return requestStages;
+    }
+
+    String clusterHostInfoJson = StageUtils.getGson().toJson(
+        StageUtils.getClusterHostInfo(cluster));
+    String hostParamsJson = StageUtils.getGson().toJson(
+        customCommandExecutionHelper.createDefaultHostParams(cluster));
+
+    Stage stage = createNewStage(requestStages.getLastStageId(), cluster,
+        requestStages.getId(), requestProperties.get(REQUEST_CONTEXT_PROPERTY),
+        clusterHostInfoJson, "{}", hostParamsJson);
+
+    String ambariServerHostname = StageUtils.getHostName();
+    ServiceComponentHostServerActionEvent event = new ServiceComponentHostServerActionEvent(
+        "AMBARI_SERVER",
+        ambariServerHostname, // TODO: Choose a random hostname from the cluster. All tasks for the AMBARI_SERVER service will be executed on this Ambari server
+        System.currentTimeMillis());
+
+    for(State newState : changedServiceGroups.keySet()) {
+      for(ServiceGroup sg : changedServiceGroups.get(newState)) {
+        Map<String, String> commandParameters = new HashMap<>();
+        commandParameters.put(YarnServiceGroupServerAction.COMMAND_PARAM_SERVICE_GROUP, sg.getName());
+        commandParameters.put(YarnServiceGroupServerAction.COMMAND_PARAM_DESIRED_STATE, newState.toString());
+        commandParameters.put(YarnServiceGroupServerAction.COMMAND_PARAM_DASH_API_ENDPOINT, getDashApiEndpoint());
+        String commandDetail = "";
+        if (newState == State.INSTALLED) {
+          if(sg.getDesiredState() == State.INIT) {
+            commandDetail = "Installing " + sg.getName();
+          } else if(sg.getDesiredState() == State.STARTED) {
+            commandDetail = "Stopping " + sg.getName();
+          }
+        } else if (newState == State.STARTED) {
+          commandDetail = "Starting " + sg.getName();
+        }
+        stage.addServerActionCommand(YarnServiceGroupServerAction.class.getName(), null, Role.AMBARI_SERVER_ACTION,
+            RoleCommand.EXECUTE, cluster.getClusterName(), event, commandParameters, commandDetail,
+            findConfigurationTagsWithOverrides(cluster, null), configs.getDefaultServerTaskTimeout(),
+            false, false);
+      }
+    }
+    RoleCommandOrder rco = getRoleCommandOrder(cluster);
+    RoleGraph rg = roleGraphFactory.createNew(rco);
+    rg.build(stage);
+    requestStages.addStages(rg.getStages());
+    return requestStages;
+  }
+
   private RequestStageContainer doStageCreation(RequestStageContainer requestStages,
       Cluster cluster,
       Map<State, List<Service>> changedServices,
@@ -2855,6 +2978,20 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
     return response;  }
 
   @Transactional
+  void updateServiceGroupStates(
+      Cluster cluster,
+      Map<State, List<ServiceGroup>> changedServiceGroups) {
+    if (changedServiceGroups != null) {
+      for (Entry<State, List<ServiceGroup>> entry : changedServiceGroups.entrySet()) {
+        State newState = entry.getKey();
+        for (ServiceGroup sg : entry.getValue()) {
+          sg.setDesiredState(newState);
+        }
+      }
+    }
+  }
+
+  @Transactional
   void updateServiceStates(
       Cluster cluster,
       Map<State, List<Service>> changedServices,
@@ -2939,6 +3076,27 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
     clusterWriteLock.lock();
     try {
       updateServiceStates(cluster, changedServices, changedComponents, changedHosts, ignoredHosts);
+    } finally {
+      clusterWriteLock.unlock();
+    }
+    return requestStages;
+  }
+
+  @Override
+  public RequestStageContainer addServiceGroupStages(RequestStageContainer requestStages, Cluster cluster,
+     Map<String, String> requestProperties, Map<String, String> requestParameters,
+     Map<State, List<ServiceGroup>> changedServiceGroups) throws AmbariException {
+
+    if (requestStages == null) {
+      requestStages = new RequestStageContainer(actionManager.getNextRequestId(), null, requestFactory, actionManager);
+    }
+
+    requestStages = doStageCreationForServiceGroups(requestStages, cluster, changedServiceGroups,
+        requestParameters, requestProperties);
+    Lock clusterWriteLock = cluster.getClusterGlobalLock().writeLock();
+    clusterWriteLock.lock();
+    try {
+      updateServiceGroupStates(cluster, changedServiceGroups);
     } finally {
       clusterWriteLock.unlock();
     }
@@ -4397,6 +4555,11 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
   }
 
   @Override
+  public ServiceGroupFactory getServiceGroupFactory() {
+    return serviceGroupFactory;
+  }
+
+  @Override
   public ServiceComponentFactory getServiceComponentFactory() {
     return serviceComponentFactory;
   }
@@ -4480,6 +4643,11 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
   }
 
   @Override
+  public String getDashApiEndpoint() {
+    return configs.getDashApiEndpoint();
+  }
+
+  @Override
   public boolean checkLdapConfigured() {
     return ldapDataPopulator.isLdapEnabled();
   }
@@ -4548,7 +4716,7 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
       StackInfo stackInfo = ambariMetaInfo.getStack(stackId.getStackName(), stackId.getStackVersion());
       if (service != null) {
         // Service widgets
-        ServiceInfo serviceInfo = stackInfo.getService(service.getName());
+        ServiceInfo serviceInfo = stackInfo.getService(service.getStackServiceName());
         File widgetDescriptorFile = serviceInfo.getWidgetsDescriptorFile();
         if (widgetDescriptorFile != null && widgetDescriptorFile.exists()) {
           try {
@@ -4712,6 +4880,12 @@ public class AmbariManagementControllerImpl implements AmbariManagementControlle
   public TimelineMetricCacheProvider getTimelineMetricCacheProvider() {
     return injector.getInstance(TimelineMetricCacheProvider.class);
   }
+
+  @Override
+  public ServiceGroupCacheProvider getServiceGroupCacheProvider() {
+    return injector.getInstance(ServiceGroupCacheProvider.class);
+  }
+
 
   @Override
   public KerberosHelper getKerberosHelper() {

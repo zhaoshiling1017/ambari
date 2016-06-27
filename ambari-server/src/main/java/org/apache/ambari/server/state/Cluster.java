@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.ambari.server.AmbariException;
+import org.apache.ambari.server.ServiceGroupNotFoundException;
 import org.apache.ambari.server.controller.ClusterResponse;
 import org.apache.ambari.server.controller.ServiceConfigVersionResponse;
 import org.apache.ambari.server.events.ClusterConfigChangedEvent;
@@ -68,6 +69,15 @@ public interface Cluster {
    */
   void addService(Service service);
 
+
+  /**
+   * Add service group to the cluster
+   * @param serviceGroup
+   * @return
+   * @throws AmbariException
+   */
+  void addServiceGroup(ServiceGroup serviceGroup);
+
   /**
    * Get a service
    * @param serviceName
@@ -80,6 +90,19 @@ public interface Cluster {
    * @return
    */
   Map<String, Service> getServices();
+
+  /**
+   * Get a service group
+   * @param serviceGroupName
+   * @return
+   */
+  ServiceGroup getServiceGroup(String serviceGroupName) throws ServiceGroupNotFoundException;
+
+  /**
+   * Get all service groups
+   * @return
+   */
+  Map<String, ServiceGroup> getServiceGroups() throws AmbariException;
 
   /**
    * Get all ServiceComponentHosts on a given host
@@ -413,6 +436,8 @@ public interface Cluster {
 
   String getServiceForConfigTypes(Collection<String> configTypes);
 
+  String getStackConfigTypeFromConfigType(String configType);
+
   /**
    * Apply specified service config version (rollback)
    * @param serviceName service name
@@ -502,6 +527,19 @@ public interface Cluster {
   void deleteService(String serviceName) throws AmbariException;
 
   /**
+   * Delete all the service groups associated with this cluster
+   * @throws AmbariException
+   */
+  void deleteAllServiceGroups() throws AmbariException;
+
+  /**
+   * Delete the named service associated with this cluster
+   * @param serviceGroupName
+   * @throws AmbariException
+   */
+  void deleteServiceGroup(String serviceGroupName) throws AmbariException;
+
+  /**
    * Gets if the cluster can be deleted
    * @return
    */
@@ -516,10 +554,12 @@ public interface Cluster {
   /**
    * Add service to the cluster
    * @param serviceName
+   * @param stackServiceName
+   * @param serviceGroupName
    * @return
    * @throws AmbariException
    */
-  Service addService(String serviceName) throws AmbariException;
+  Service addService(String serviceName, String stackServiceName, String serviceGroupName) throws AmbariException;
 
   /**
    * Get lock to control access to cluster structure

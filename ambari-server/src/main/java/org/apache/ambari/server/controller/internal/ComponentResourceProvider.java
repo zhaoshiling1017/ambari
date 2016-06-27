@@ -27,18 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.ambari.server.AmbariException;
-import org.apache.ambari.server.ClusterNotFoundException;
-import org.apache.ambari.server.DuplicateResourceException;
-import org.apache.ambari.server.ObjectNotFoundException;
-import org.apache.ambari.server.ParentObjectNotFoundException;
-import org.apache.ambari.server.ServiceNotFoundException;
+import jline.internal.Log;
+import org.apache.ambari.server.*;
 import org.apache.ambari.server.api.services.AmbariMetaInfo;
 import org.apache.ambari.server.controller.AmbariManagementController;
 import org.apache.ambari.server.controller.MaintenanceStateHelper;
 import org.apache.ambari.server.controller.RequestStatusResponse;
 import org.apache.ambari.server.controller.ServiceComponentRequest;
 import org.apache.ambari.server.controller.ServiceComponentResponse;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCache;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheKey;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheProvider;
 import org.apache.ambari.server.controller.spi.NoSuchParentResourceException;
 import org.apache.ambari.server.controller.spi.NoSuchResourceException;
 import org.apache.ambari.server.controller.spi.Predicate;
@@ -52,19 +51,12 @@ import org.apache.ambari.server.security.authorization.AuthorizationException;
 import org.apache.ambari.server.security.authorization.AuthorizationHelper;
 import org.apache.ambari.server.security.authorization.ResourceType;
 import org.apache.ambari.server.security.authorization.RoleAuthorization;
-import org.apache.ambari.server.state.Cluster;
-import org.apache.ambari.server.state.Clusters;
-import org.apache.ambari.server.state.ComponentInfo;
-import org.apache.ambari.server.state.Service;
-import org.apache.ambari.server.state.ServiceComponent;
-import org.apache.ambari.server.state.ServiceComponentFactory;
-import org.apache.ambari.server.state.ServiceComponentHost;
-import org.apache.ambari.server.state.StackId;
-import org.apache.ambari.server.state.State;
+import org.apache.ambari.server.state.*;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.persist.Transactional;
+import org.apache.ambari.server.utils.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 
@@ -81,6 +73,7 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
   protected static final String COMPONENT_COMPONENT_NAME_PROPERTY_ID  = "ServiceComponentInfo/component_name";
   protected static final String COMPONENT_DISPLAY_NAME_PROPERTY_ID    = "ServiceComponentInfo/display_name";
   protected static final String COMPONENT_STATE_PROPERTY_ID           = "ServiceComponentInfo/state";
+  protected static final String COMPONENT_DESIRED_COUNT_PROPERTY_ID    = "ServiceComponentInfo/desired_count";
   protected static final String COMPONENT_CATEGORY_PROPERTY_ID        = "ServiceComponentInfo/category";
   protected static final String COMPONENT_TOTAL_COUNT_PROPERTY_ID     = "ServiceComponentInfo/total_count";
   protected static final String COMPONENT_STARTED_COUNT_PROPERTY_ID   = "ServiceComponentInfo/started_count";
@@ -99,6 +92,11 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
           COMPONENT_COMPONENT_NAME_PROPERTY_ID}));
 
   private MaintenanceStateHelper maintenanceStateHelper;
+
+  private static Map<String, String> componentNameMappings = MapUtils.fillMap("/var/lib/ambari-server/resources/componentsMap.dat");
+
+  private ServiceGroupCacheProvider cacheProvider;
+  private ServiceGroupCache cache;
 
   // ----- Constructors ----------------------------------------------------
 
@@ -122,6 +120,9 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
     setRequiredGetAuthorizations(RoleAuthorization.AUTHORIZATIONS_VIEW_SERVICE);
     setRequiredGetAuthorizations(RoleAuthorization.AUTHORIZATIONS_VIEW_SERVICE);
     setRequiredUpdateAuthorizations(RoleAuthorization.AUTHORIZATIONS_UPDATE_CLUSTER);
+
+    this.cacheProvider = managementController.getServiceGroupCacheProvider();
+    this.cache = cacheProvider.getServiceGroupCache();
   }
 
 
@@ -180,6 +181,7 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
       setResourceProperty(resource, COMPONENT_CATEGORY_PROPERTY_ID, response.getCategory(), requestedIds);
       setResourceProperty(resource, COMPONENT_TOTAL_COUNT_PROPERTY_ID, response.getTotalCount(), requestedIds);
       setResourceProperty(resource, COMPONENT_STARTED_COUNT_PROPERTY_ID, response.getStartedCount(), requestedIds);
+      setResourceProperty(resource, COMPONENT_DESIRED_COUNT_PROPERTY_ID, response.getDesiredCount(), requestedIds);
       setResourceProperty(resource, COMPONENT_INSTALLED_COUNT_PROPERTY_ID, response.getInstalledCount(), requestedIds);
       setResourceProperty(resource, COMPONENT_RECOVERY_ENABLED_ID, String.valueOf(response.isRecoveryEnabled()), requestedIds);
 
@@ -255,6 +257,7 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
         (String) properties.get(COMPONENT_SERVICE_NAME_PROPERTY_ID),
         (String) properties.get(COMPONENT_COMPONENT_NAME_PROPERTY_ID),
         (String) properties.get(COMPONENT_STATE_PROPERTY_ID),
+        (String) properties.get(COMPONENT_DESIRED_COUNT_PROPERTY_ID),
         (String) properties.get(COMPONENT_RECOVERY_ENABLED_ID),
         (String) properties.get(COMPONENT_CATEGORY_PROPERTY_ID));
   }
@@ -351,6 +354,11 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
       } else {
         sc.setDesiredState(s.getDesiredState());
       }
+      int desiredCount = 0;
+      if(StringUtils.isNotEmpty(request.getDesiredCount())) {
+        desiredCount = Integer.parseInt(request.getDesiredCount());
+      }
+      sc.setDesiredCount(desiredCount);
 
       /**
        * If request does not have recovery_enabled field,
@@ -395,8 +403,9 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
   // Get the components for the given request.
   private Set<ServiceComponentResponse> getComponents(ServiceComponentRequest request) throws AmbariException {
 
-    final AmbariMetaInfo ambariMetaInfo = getManagementController().getAmbariMetaInfo();
-    final Clusters clusters = getManagementController().getClusters();
+    AmbariManagementController controller = getManagementController();
+    final AmbariMetaInfo ambariMetaInfo = controller.getAmbariMetaInfo();
+    final Clusters clusters = controller.getClusters();
     final Cluster cluster = getCluster(request, clusters);
 
     Set<ServiceComponentResponse> response = new HashSet<>();
@@ -410,6 +419,49 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
       final Service s = getServiceFromCluster(request, cluster);
       ServiceComponent sc = s.getServiceComponent(request.getComponentName());
       ServiceComponentResponse serviceComponentResponse = sc.convertToResponse();
+      ServiceGroup sg = null;
+      try {
+        sg = cluster.getServiceGroup(sc.getServiceGroupName());
+      } catch (ServiceGroupNotFoundException e) {
+        sg = null;
+      }
+      if(sg != null && !sg.getServiceGroupType().equalsIgnoreCase("AMBARI")) {
+        ServiceGroupCacheKey cacheKey = new ServiceGroupCacheKey(sg.getName());
+        Map<String, Object> responseMap = null;
+        try {
+          responseMap = cache.getResponseFromCache(cacheKey);
+        } catch (Exception e) {
+          Log.info("Hit exception when retrieving service group from cache. Exception: " + e.getMessage());
+        }
+        if (responseMap != null && responseMap.containsKey("containers")) {
+          String mappedComponentName = componentNameMappings.containsKey(request.getComponentName()) ?
+              componentNameMappings.get(request.getComponentName()) : request.getComponentName();
+          int installedCount = 0;
+          int startedCount = 0;
+
+          for (Map<String, String> cMap : (ArrayList<Map<String, String>>) responseMap.get("containers")) {
+            String dashContainerName = cMap.get("id");
+            String dashComponentName = cMap.get("component_name");
+            String dashState = cMap.get("state");
+            String dashHostName = cMap.get("hostname");
+            String dashBareHostName = cMap.get("bare_host");
+            if (dashComponentName.contains(mappedComponentName)) {
+              if (dashState.equalsIgnoreCase("READY")) {
+                if (sc.isClientComponent()) {
+                  installedCount++;
+                } else {
+                  startedCount++;
+                }
+              } else {
+                installedCount++;
+              }
+            }
+          }
+          serviceComponentResponse.setInstalledCount(installedCount);
+          serviceComponentResponse.setStartedCount(startedCount);
+        }
+      }
+
 
       try {
         ComponentInfo componentInfo = ambariMetaInfo.getComponent(stackId.getStackName(),
@@ -443,6 +495,48 @@ public class ComponentResourceProvider extends AbstractControllerResourceProvide
         }
 
         ServiceComponentResponse serviceComponentResponse = sc.convertToResponse();
+        ServiceGroup sg = null;
+        try {
+          sg = cluster.getServiceGroup(sc.getServiceGroupName());
+        } catch (ServiceGroupNotFoundException e) {
+          sg = null;
+        }
+        if(sg != null && !sg.getServiceGroupType().equalsIgnoreCase("AMBARI")) {
+          ServiceGroupCacheKey cacheKey = new ServiceGroupCacheKey(sg.getName());
+          Map<String, Object> responseMap = null;
+          try {
+            responseMap = cache.getResponseFromCache(cacheKey);
+          } catch (Exception e) {
+            Log.info("Hit exception when retrieving service group from cache. Exception: " + e.getMessage());
+          }
+          if (responseMap != null && responseMap.containsKey("containers")) {
+            String mappedComponentName = componentNameMappings.containsKey(sc.getName()) ?
+                componentNameMappings.get(sc.getName()) : sc.getName();
+            int installedCount = 0;
+            int startedCount = 0;
+
+            for (Map<String, String> cMap : (ArrayList<Map<String, String>>) responseMap.get("containers")) {
+              String dashContainerName = cMap.get("id");
+              String dashComponentName = cMap.get("component_name");
+              String dashState = cMap.get("state");
+              String dashHostName = cMap.get("hostname");
+              String dashBareHostName = cMap.get("bare_host");
+              if (dashComponentName.contains(mappedComponentName)) {
+                if (dashState.equalsIgnoreCase("READY")) {
+                  if (sc.isClientComponent()) {
+                    installedCount++;
+                  } else {
+                    startedCount++;
+                  }
+                } else {
+                  installedCount++;
+                }
+              }
+            }
+            serviceComponentResponse.setInstalledCount(installedCount);
+            serviceComponentResponse.setStartedCount(startedCount);
+          }
+        }
         try {
           ComponentInfo componentInfo = ambariMetaInfo.getComponent(stackId.getStackName(),
               stackId.getStackVersion(), s.getName(), sc.getName());

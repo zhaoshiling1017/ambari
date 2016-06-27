@@ -31,9 +31,9 @@ public class ServiceInstalledEvent extends ServiceEvent {
    * @param serviceName
    */
   public ServiceInstalledEvent(long clusterId, String stackName,
-      String stackVersion, String serviceName) {
+      String stackVersion, String serviceName, String stackServiceName, String serviceGroupName) {
     super(AmbariEventType.SERVICE_INSTALL_SUCCESS, clusterId, stackName,
-        stackVersion, serviceName);
+        stackVersion, serviceName, stackServiceName, serviceGroupName);
   }
 
   /**

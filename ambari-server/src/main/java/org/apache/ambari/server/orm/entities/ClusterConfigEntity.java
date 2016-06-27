@@ -71,6 +71,9 @@ public class ClusterConfigEntity {
   @Column(name = "type_name")
   private String type;
 
+  @Column(name = "stack_type_name")
+  private String stackType;
+
   @Column(name = "version")
   private Long version;
 
@@ -129,6 +132,14 @@ public class ClusterConfigEntity {
 
   public void setType(String typeName) {
     type = typeName;
+  }
+
+  public String getStackType() {
+    return stackType;
+  }
+
+  public void setStackType(String stackTypeName) {
+    stackType = stackTypeName;
   }
 
   public Long getVersion() {

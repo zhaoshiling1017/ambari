@@ -1,0 +1,45 @@
+{{!
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+}}
+
+<h5 class="section-title">{{view.rowTitle}}
+  <i {{bindAttr class="view.rowTitle :icon-question-sign"}}></i>
+</h5>
+<div class="row-fluid store-apps-row">
+  <div {{bindAttr class=":slide-left :store-app-span :span1 :icon-chevron-left :icon-2x
+    view.disabledLeft:disabled view.isComponents:is-component" }}
+    {{action moveLeft target="view"}}>
+  </div>
+  {{#each storeApp in view.visibleApps}}
+    <div class="store-app-span span2">
+      {{view App.StoreAppBlockView storeAppBinding="storeApp"}}
+      {{#if storeApp.isActive}}
+        <div {{bindAttr class=":arrow storeApp.isComponent:is-component"}}></div>{{/if}}
+    </div>
+  {{/each}}
+  <div {{bindAttr class=":slide-right :store-app-span :span1 :icon-chevron-right :icon-2x
+    view.disabledRight:disabled view.isComponents:is-component" }}
+    {{action moveRight target="view"}}>
+  </div>
+</div>
+{{#if view.hasActiveApp}}
+  <div class="row-fluid">
+    <div class="span12">
+      {{view App.ActiveStoreAppView storeAppBinding="view.activeApp"}}
+    </div>
+  </div>
+{{/if}}

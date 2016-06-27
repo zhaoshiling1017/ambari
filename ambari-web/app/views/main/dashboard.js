@@ -22,6 +22,9 @@ App.MainDashboardView = Em.View.extend({
 
   name: 'mainDashboardView',
   templateName: require('templates/main/dashboard'),
+  didInsertElement: function() {
+
+  },
 
   selectedBinding: 'controller.selectedCategory',
   categories: [

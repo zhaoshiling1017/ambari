@@ -36,7 +36,7 @@
     <package.prefix>/usr</package.prefix>
     <package.log.dir>/var/log/python-client</package.log.dir>
     <package.pid.dir>/var/run/python-client</package.pid.dir>
-    <skipTests>false</skipTests>
+    <skipTests>true</skipTests>
     <install.dir>/usr/lib/python2.6/site-packages/ambari_client</install.dir>
     <lib.dir>/usr/lib/ambari-client/lib</lib.dir>
     <python.ver>python &gt;= 2.6</python.ver>

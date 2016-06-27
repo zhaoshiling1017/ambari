@@ -31,9 +31,9 @@ public class ServiceRemovedEvent extends ServiceEvent {
    * @param serviceName
    */
   public ServiceRemovedEvent(long clusterId, String stackName,
-      String stackVersion, String serviceName) {
+      String stackVersion, String serviceName, String stackServiceName, String serviceGroupName) {
     super(AmbariEventType.SERVICE_REMOVED_SUCCESS, clusterId, stackName,
-        stackVersion, serviceName);
+        stackVersion, serviceName, stackServiceName, serviceGroupName);
   }
 
   /**

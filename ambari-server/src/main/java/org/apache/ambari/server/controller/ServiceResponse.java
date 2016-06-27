@@ -24,16 +24,20 @@ public class ServiceResponse {
   private Long clusterId;
   private String clusterName;
   private String serviceName;
+  private String stackServiceName;
+  private String serviceGroupName;
   private String desiredStackVersion;
   private String desiredState;
   private String maintenanceState;
 
   public ServiceResponse(Long clusterId, String clusterName,
-                         String serviceName,
+                         String serviceName, String stackServiceName, String serviceGroupName,
                          String desiredStackVersion, String desiredState) {
     this.clusterId = clusterId;
     this.clusterName = clusterName;
     this.serviceName = serviceName;
+    this.serviceGroupName = serviceGroupName;
+    this.stackServiceName = stackServiceName;
     this.setDesiredStackVersion(desiredStackVersion);
     this.setDesiredState(desiredState);
   }
@@ -52,6 +56,34 @@ public class ServiceResponse {
    */
   public void setServiceName(String serviceName) {
     this.serviceName = serviceName;
+  }
+
+  /**
+   * @return the real serviceName
+   */
+  public String getStackServiceName() {
+    return stackServiceName;
+  }
+
+  /**
+   * @param stackServiceName the real serviceName to set
+   */
+  public void setStackServiceName(String stackServiceName) {
+    this.stackServiceName = stackServiceName;
+  }
+
+  /**
+   * @return the service group name
+   */
+  public String getServiceGroupName() {
+    return serviceGroupName;
+  }
+
+  /**
+   * @param  serviceGroupName the service group name
+   */
+  public void setServiceGroupName(String serviceGroupName) {
+    this.serviceGroupName = serviceGroupName;
   }
 
   /**

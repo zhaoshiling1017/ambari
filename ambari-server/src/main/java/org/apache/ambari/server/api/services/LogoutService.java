@@ -37,7 +37,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * Service performing logout of current user
  */
 @StaticallyInject
-@Path("/logout")
 public class LogoutService {
 
   @Inject

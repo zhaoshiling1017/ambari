@@ -18,8 +18,37 @@
 
 var App = require('app');
 
+/**
+ * Check serviceGroup's <code>dependentKey</code>
+ * If there is no serviceGroup, it means that view is used for the whole cluster and all service groups should be checked
+ *
+ * @param {string} dependentKey
+ * @returns {Ember.ComputedProperty}
+ */
+function serviceGroupBased(dependentKey) {
+  var key1 = 'serviceGroup.' + dependentKey;
+  var key2 = 'serviceController.content.@each.' + dependentKey;
+  return Ember.computed(key1, key2, function () {
+    var serviceGroup = this.get('serviceGroup');
+    if (!serviceGroup) {
+      return this.get('serviceController.content').everyProperty(dependentKey, true);
+    }
+    return serviceGroup.get(dependentKey);
+  });
+}
+
+/**
+ * List of actions like "Start All", "Stop All" etc
+ * Used for service groups and whole cluster
+ *
+ * @type {Em.View}
+ */
 App.AllServicesActionView = Em.View.extend({
   templateName: require('templates/main/service/all_services_actions'),
+
+  isStopAllDisabled: serviceGroupBased('isStopAllDisabled'),
+  isStartAllDisabled: serviceGroupBased('isStartAllDisabled'),
+  isRestartAllRequiredDisabled: serviceGroupBased('isRestartAllRequiredDisabled'),
 
   serviceController: function () {
     return App.get('router.mainServiceController');

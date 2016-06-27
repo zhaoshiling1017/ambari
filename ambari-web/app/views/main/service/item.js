@@ -318,13 +318,20 @@ App.MainServiceItemView = Em.View.extend({
     return this.get('state') !== 'inDOM' || this.get('maintenance').length !== 0;
   }.property('maintenance'),
 
+  isServiceActionsVisible: function() {
+    var isCore = App.get('router.mainServiceController.serviceGroup.id') === 'CORE';
+    return this.get('isMaintenanceActive') && isCore;
+  }.property('isMaintenanceActive', 'controller.content.serviceName'),
+
   hasConfigTab: function() {
-    return App.isAuthorized('CLUSTER.VIEW_CONFIGS', {ignoreWizard: true}) && !App.get('services.noConfigTypes').contains(this.get('controller.content.serviceName'));
-  }.property('controller.content.serviceName','App.services.noConfigTypes'),
+    var isCore = App.get('router.mainServiceController.serviceGroup.id') === 'CORE';
+    return App.isAuthorized('CLUSTER.VIEW_CONFIGS', {ignoreWizard: true}) && isCore && !App.get('services.noConfigTypes').contains(this.get('controller.content.serviceName'));
+  }.property('controller.content.serviceName','App.services.noConfigTypes', 'App.router.mainServiceController.serviceGroup'),
 
   hasHeatmapTab: function() {
-    return App.get('services.servicesWithHeatmapTab').contains(this.get('controller.content.serviceName'));
-  }.property('controller.content.serviceName', 'App.services.servicesWithHeatmapTab'),
+    var isCore = App.get('router.mainServiceController.serviceGroup.id') === 'CORE';
+    return isCore && App.get('services.servicesWithHeatmapTab').contains(this.get('controller.content.serviceName'));
+  }.property('controller.content.serviceName', 'App.services.servicesWithHeatmapTab', 'App.router.mainServiceController.serviceGroup'),
 
   didInsertElement: function () {
     this.get('controller').setStartStopState();

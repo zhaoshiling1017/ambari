@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.ambari.server.AmbariException;
+import org.apache.ambari.server.controller.AmbariManagementController;
+import org.apache.ambari.server.controller.AmbariServer;
 import org.apache.ambari.server.controller.StackVersionResponse;
 import org.apache.ambari.server.stack.Validable;
 import org.apache.ambari.server.state.repository.VersionDefinitionXml;
@@ -146,12 +149,39 @@ public class StackInfo implements Comparable<StackInfo>, Validable{
     return services;
   }
 
-  public ServiceInfo getService(String name) {
+  public ServiceInfo getService(String serviceName) {
     Collection<ServiceInfo> services = getServices();
     for (ServiceInfo service : services) {
-      if (service.getName().equals(name)) {
+      if (service.getName().equals(serviceName)) {
         return service;
       }
+    }
+
+    // HACK: If service name is different from stack service name, try using stack service name
+    try {
+      AmbariManagementController controller = AmbariServer.getController();
+      if (controller != null) {
+        Clusters clusters = controller.getClusters();
+        Map<String, Cluster> clusterMap = clusters.getClusters();
+        if (clusterMap != null && clusterMap.size() != 0) {
+          for (Cluster c : clusterMap.values()) {
+            StackId stackId = c.getCurrentStackVersion();
+            if (stackId.getStackName().equalsIgnoreCase(getName()) && stackId.getStackVersion().equalsIgnoreCase(version)) {
+              Service svc = c.getService(serviceName);
+              if (svc != null) {
+                String stackServiceName = svc.getStackServiceName();
+                for (ServiceInfo service : services) {
+                  if (service.getName().equals(stackServiceName)) {
+                    return service;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (AmbariException e) {
+
     }
     //todo: exception?
     return null;

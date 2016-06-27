@@ -305,7 +305,7 @@ public class HeartbeatProcessor extends AbstractService{
         for (ServiceComponentHost scHost : scHosts) {
           ComponentInfo componentInfo =
               ambariMetaInfo.getComponent(stackId.getStackName(),
-                  stackId.getStackVersion(), scHost.getServiceName(),
+                  stackId.getStackVersion(), scHost.getStackServiceName(),
                   scHost.getServiceComponentName());
 
           String status = scHost.getState().name();

@@ -1,0 +1,107 @@
+{{!
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+}}
+<div id="apps-store">
+  <div class="row-fluid top-search-bar">
+    <div class="span12">
+      <div class="span2 title">
+        <h2>{{t menu.item.appStore}}</h2>
+      </div>
+      <div class="span2 subtitle">
+        <h5>{{subtitle}}</h5>
+      </div>
+      {{#if showFilterString}}
+        <div class="pull-right search-box">
+          <i class="icon-search"></i>{{view Em.TextField valueBinding="filterString" placeholderBinding="searchString"}}
+        </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="row-fluid main-apps-content">
+    <div class="well span2 left-menu" style="padding: 8px 0px 8px 25px">
+      <h5 class="static-title">{{t appStore.menu.header.discover}}</h5>
+      {{#view App.CollapsibleView openOnInit=true}}
+        <h5>
+          <span {{action "toggleCollapse" target="view"}} {{bindAttr class="view.expanded:icon-caret-down:icon-caret-right :pointer"}}></span>
+          <a id="discover-assemblies-label" {{action "toggleCollapse" target="view"}}>{{t common.categories}}</a>
+        </h5>
+        <div id="discover-assemblies-content" class="collapse">
+          <ul class="nav nav-list">
+            {{#each storeCategory in storeCategories}}
+              <li {{bindAttr class="storeCategory.isActive:active"}}>
+                <a href="#" {{action "selectCategory" storeCategory target="controller"}}>{{storeCategory.name}}</a>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/view}}
+
+      <h5 class="static-title">{{t appStore.menu.header.manage}}</h5>
+      {{#view App.CollapsibleView class="service-groups-block" openOnInit=false}}
+        <h5>
+          <span {{action "toggleCollapse" target="view"}} {{bindAttr class="view.expanded:icon-caret-down:icon-caret-right :pointer"}}></span>
+          <a id="manage-deployed-assemblies-label" {{action "toggleCollapse" target="view"}}>{{t appStore.collections.assemblies}}</a>
+        </h5>
+        <div class="collapse" id="manage-deployed-assemblies-content">
+          {{#each serviceGroup in visibleServiceGroups}}
+            <div class="service-group">
+              {{#view App.CollapsibleView contentBinding="serviceGroup"}}
+                <div {{bindAttr class="serviceGroup.isActive:active :service-group-title"}}>
+                  <div {{action "toggleCollapse" target="view"}}>
+                    <span {{bindAttr class="view.expanded:icon-caret-down:icon-caret-right :pointer"}}></span>
+                    <a href="#" {{action "makeServiceGroupActive" serviceGroup target="controller"}}>
+                      {{serviceGroup.serviceGroupDisplayName}}
+                    </a>
+                    {{#unless serviceGroup.allServicesAreStarted}}
+                      <img src="/img/health-status-dead.png" alt="">
+                    {{/unless}}
+                  </div>
+                </div>
+                <div class="collapse manage-deployed-assembly">
+                  {{view App.MainServiceMenuView serviceGroupBinding="serviceGroup"}}
+                  {{view App.AllServicesActionView serviceGroupBinding="serviceGroup"}}
+                </div>
+              {{/view}}
+            </div>
+          {{/each}}
+        </div>
+      {{/view}}
+
+      {{#view App.CollapsibleView}}
+        <h5>
+          <span {{action "toggleCollapse" target="view"}} {{bindAttr class="view.expanded:icon-caret-down:icon-caret-right :pointer"}}></span>
+          <a id="manage-assemblies-collection-label" {{action "toggleCollapse" target="view"}}>{{t appStore.collections.header}}</a>
+        </h5>
+        <div class="collapse" id="manage-assemblies-collection-content">
+          <ul class="nav nav-list">
+            {{#each storeCollection in storeCollections}}
+              <li {{bindAttr class="storeCollection.isActive:active"}}>
+                <a
+                  href="#" {{action "selectCollection" storeCollection target="controller"}}>{{storeCollection.name}}</a>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/view}}
+
+    </div>
+    <div class="span10 apps-section">
+      {{outlet}}
+    </div>
+  </div>
+</div>

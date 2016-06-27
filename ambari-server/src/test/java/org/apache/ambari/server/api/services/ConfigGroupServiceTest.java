@@ -20,6 +20,7 @@ package org.apache.ambari.server.api.services;
 import org.apache.ambari.server.api.resources.ResourceInstance;
 import org.apache.ambari.server.api.services.parsers.RequestBodyParser;
 import org.apache.ambari.server.api.services.serializers.ResultSerializer;
+import org.apache.ambari.server.api.util.ApiVersion;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
@@ -84,7 +85,7 @@ public class ConfigGroupServiceTest extends BaseServiceTest {
     private String m_groupId;
 
     public TestConfigGroupService(String m_clusterName, String groupId) {
-      super(m_clusterName);
+      super(ApiVersion.v1, m_clusterName);
       this.m_clusterName = m_clusterName;
       this.m_groupId = groupId;
     }

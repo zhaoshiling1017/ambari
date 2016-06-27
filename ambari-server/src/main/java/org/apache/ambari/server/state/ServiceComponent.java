@@ -44,6 +44,10 @@ public interface ServiceComponent {
 
   String getServiceName();
 
+  String getStackServiceName();
+
+  String getServiceGroupName();
+
   long getClusterId();
 
   String getClusterName();
@@ -59,6 +63,10 @@ public interface ServiceComponent {
   String getDesiredVersion();
 
   void setDesiredVersion(String version);
+
+  int getDesiredCount();
+
+  void setDesiredCount(int desiredCount);
 
   Map<String, ServiceComponentHost> getServiceComponentHosts();
 

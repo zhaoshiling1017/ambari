@@ -559,11 +559,13 @@ describe('App.MainServiceInfoSummaryView', function() {
       sinon.stub(App.StackService, 'find').returns(mock);
       sinon.stub(view, 'getUserPref').returns({
         complete: function(callback){callback();}
-      })
+      });
+      view.set('controller.content.serviceGroupName', 'CORE');
     });
     afterEach(function() {
       App.StackService.find.restore();
       view.getUserPref.restore();
+      view.set('controller.content.serviceGroupName', undefined);
     });
 
     it("metrics not loaded", function() {

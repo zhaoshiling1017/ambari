@@ -187,7 +187,7 @@ public class ServiceComponentHostConcurrentWriteDeadlockTest {
     private List<ServiceComponentHost> serviceComponentHosts;
 
     /**
-     * @param nameNodeSCH
+     * @param serviceComponentHosts
      *          the nameNodeSCH to set
      */
     public void setServiceComponentHosts(List<ServiceComponentHost> serviceComponentHosts) {
@@ -252,7 +252,7 @@ public class ServiceComponentHostConcurrentWriteDeadlockTest {
     try {
       service = cluster.getService(serviceName);
     } catch (ServiceNotFoundException e) {
-      service = serviceFactory.createNew(cluster, serviceName);
+      service = serviceFactory.createNew(cluster, serviceName, serviceName, "CORE");
       cluster.addService(service);
       service.persist();
     }

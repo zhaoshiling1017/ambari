@@ -17,6 +17,7 @@
  */
 package org.apache.ambari.server.api.services;
 
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.orm.entities.ViewInstanceEntity;
 import org.apache.ambari.server.view.ViewDataMigrationContextImpl;
 import org.apache.ambari.server.view.ViewRegistry;
@@ -66,7 +67,8 @@ public class ViewDataMigrationService extends BaseService {
    * @param viewVersion    the current view version
    * @param instanceName   the current view instance name
    */
-  public ViewDataMigrationService(String viewName, String viewVersion, String instanceName) {
+  public ViewDataMigrationService(ApiVersion apiVersion, String viewName, String viewVersion, String instanceName) {
+    super(apiVersion);
     this.viewName = viewName;
     this.viewVersion = viewVersion;
     this.instanceName = instanceName;

@@ -39,6 +39,7 @@ App.registerBoundHelper = function(name, view) {
  *           {{pluralize hostsCount singular="@view.hostName"}}
  */
 App.registerBoundHelper('pluralize', App.PluralizeView);
+
 /**
  * Return defined string instead of empty if value is null/undefined
  * by default is `n/a`.
@@ -101,3 +102,9 @@ App.registerBoundHelper('statusIcon', App.StatusIconView);
  * @param {string} content - serviceName
  */
 App.registerBoundHelper('formatRole', App.FormatRoleView);
+
+/**
+ * Return `span` with message where all "\n" are replaced with br-tag
+ * @param {string} content - message to show
+ */
+App.registerBoundHelper('nl2br', App.Nl2BrView);

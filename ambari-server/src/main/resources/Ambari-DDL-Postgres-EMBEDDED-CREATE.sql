@@ -73,6 +73,7 @@ CREATE TABLE ambari.clusterconfig (
   version_tag VARCHAR(255) NOT NULL,
   version BIGINT NOT NULL,
   type_name VARCHAR(255) NOT NULL,
+  stack_type_name VARCHAR(255) NOT NULL,
   cluster_id BIGINT NOT NULL,
   stack_id BIGINT NOT NULL,
   config_data TEXT NOT NULL,
@@ -154,8 +155,22 @@ CREATE TABLE ambari.serviceconfigmapping (
 );
 GRANT ALL PRIVILEGES ON TABLE ambari.serviceconfigmapping TO :username;
 
+CREATE TABLE ambari.clusterservicegroups (
+  service_group_name VARCHAR(255) NOT NULL,
+  service_group_display_name VARCHAR(255) NOT NULL,
+  cluster_id BIGINT NOT NULL,
+  service_group_type VARCHAR(255) NOT NULL DEFAULT 'AMBARI',
+  assembly_file TEXT,
+  current_state VARCHAR(255) NOT NULL,
+  desired_state VARCHAR(255) NOT NULL,
+  CONSTRAINT PK_clusterservicegroups PRIMARY KEY (service_group_name, cluster_id),
+  CONSTRAINT FK_clusterservicegroups_cluster_id FOREIGN KEY (cluster_id) REFERENCES clusters (cluster_id));
+GRANT ALL PRIVILEGES ON TABLE ambari.clusterservicegroups TO :username;
+
 CREATE TABLE ambari.clusterservices (
   service_name VARCHAR(255) NOT NULL,
+  stack_service_name VARCHAR(255) NOT NULL,
+  service_group_name VARCHAR(255) NOT NULL,
   cluster_id BIGINT NOT NULL,
   service_enabled INTEGER NOT NULL,
   CONSTRAINT PK_clusterservices PRIMARY KEY (service_name, cluster_id),
@@ -214,6 +229,7 @@ CREATE TABLE ambari.servicecomponentdesiredstate (
   desired_state VARCHAR(255) NOT NULL,
   service_name VARCHAR(255) NOT NULL,
   recovery_enabled SMALLINT NOT NULL DEFAULT 0,
+  desired_count INTEGER NOT NULL DEFAULT 0,
   CONSTRAINT pk_sc_desiredstate PRIMARY KEY (id),
   CONSTRAINT unq_scdesiredstate_name UNIQUE(component_name, service_name, cluster_id),
   CONSTRAINT FK_scds_desired_stack_id FOREIGN KEY (desired_stack_id) REFERENCES ambari.stack(stack_id),
@@ -667,7 +683,7 @@ CREATE TABLE ambari.viewinstance (
   icon64 VARCHAR(255),
   xml_driven CHAR(1),
   alter_names SMALLINT NOT NULL DEFAULT 1,
-  cluster_handle VARCHAR(255),
+  cluster_handle BIGINT,
   cluster_type VARCHAR(100) NOT NULL DEFAULT 'LOCAL_AMBARI',
   short_url BIGINT,
   CONSTRAINT PK_viewinstance PRIMARY KEY (view_instance_id),

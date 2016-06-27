@@ -17,15 +17,14 @@
  */
 
 var App = require('app');
+var misc = require('utils/misc');
 
 App.MainServiceMenuView = Em.CollectionView.extend({
-  disabledServices: [],
 
   content: function () {
-    return App.router.get('mainServiceController.content').filter(function(item){
-      return !this.get('disabledServices').contains(item.get('id'));
-    }, this);
-  }.property('App.router.mainServiceController.content', 'App.router.mainServiceController.content.length'),
+    var serviceGroup = this.get('serviceGroup');
+    return serviceGroup ? misc.sortByOrder(App.StackService.find().mapProperty('serviceName'), serviceGroup.get('services').toArray()) : [];
+  }.property('serviceGroup'),
 
   didInsertElement:function () {
     App.router.location.addObserver('lastSetURL', this, 'renderOnRoute');
@@ -38,20 +37,20 @@ App.MainServiceMenuView = Em.CollectionView.extend({
     this.$(".restart-required-service").tooltip('destroy');
   },
 
-  activeServiceId:null,
+  activeServiceId: null,
 
   /**
    *    Syncs navigation menu with requested URL
    */
   renderOnRoute:function () {
-    var last_url = App.router.location.lastSetURL || location.href.replace(/^[^#]*#/, '');
-    if (last_url.substr(1, 4) !== 'main' || !this._childViews) {
+    var lastUrl = App.router.location.lastSetURL || location.href.replace(/^[^#]*#/, '');
+    if (lastUrl.substr(1, 4) !== 'main' || !this._childViews) {
       return;
     }
     var reg = /^\/main\/services\/(\S+)\//g;
-    var sub_url = reg.exec(last_url);
-    var service_id = (null != sub_url) ? sub_url[1] : 1;
-    this.set('activeServiceId', service_id);
+    var subUrl = reg.exec(lastUrl);
+    var serviceId = null != subUrl ? subUrl[1] : 1;
+    this.set('activeServiceId', serviceId);
   },
 
   tagName:'ul',
@@ -59,15 +58,15 @@ App.MainServiceMenuView = Em.CollectionView.extend({
 
   itemViewClass:Em.View.extend({
 
-    classNameBindings:["active", "clients"],
-    templateName:require('templates/main/service/menu_item'),
+    classNameBindings: ["active", "clients"],
+    templateName: require('templates/main/service/menu_item'),
     restartRequiredMessage: null,
 
     shouldBeRestarted: Em.computed.someBy('content.hostComponents', 'staleConfigs', true),
 
     active:function () {
       return this.get('content.id') == this.get('parentView.activeServiceId') ? 'active' : '';
-    }.property('parentView.activeServiceId'),
+    }.property('content.id', 'parentView.activeServiceId'),
 
     alertsCount: function () {
       return this.get('content.alertsCount') > 99 ? "99+" : this.get('content.alertsCount') ;
@@ -79,39 +78,33 @@ App.MainServiceMenuView = Em.CollectionView.extend({
       return !App.get('services.noConfigTypes').contains(this.get('content.serviceName'));
     }.property('App.services.noConfigTypes','content.serviceName'),
 
-    link: function() {
-      var stateName = (['summary','configs'].contains(App.router.get('currentState.name')))
-        ? this.get('isConfigurable') && this.get('parentView.activeServiceId') != this.get('content.id') ?  App.router.get('currentState.name') : 'summary'
-        : 'summary';
-      return "#/main/services/" + this.get('content.id') + "/" + stateName;
-    }.property('App.router.currentState.name', 'parentView.activeServiceId', 'isConfigurable'),
-
     goToConfigs: function () {
       App.router.set('mainServiceItemController.routeToConfigs', true);
       App.router.transitionTo('services.service.configs', this.get('content'));
       App.router.set('mainServiceItemController.routeToConfigs', false);
     },
 
+    link: function() {
+      if (this.get('controller.name') && this.get('controller.name') == "mainAssembliesController" ) {
+        return "javascript: void(0)";
+      }
+      var stateName = (['summary','configs'].contains(App.router.get('currentState.name')))
+        ? this.get('isConfigurable') && this.get('parentView.activeServiceId') != this.get('content.id') ?  App.router.get('currentState.name') : 'summary' : 'summary';
+      return "#/main/services/" + this.get('content.id') + "/" + stateName;
+    }.property('App.router.currentState.name', 'parentView.activeServiceId', 'isConfigurable'),
+
     refreshRestartRequiredMessage: function() {
       var restarted, componentsCount, hostsCount, message, tHosts, tComponents;
       restarted = this.get('content.restartRequiredHostsAndComponents');
       componentsCount = 0;
       hostsCount = 0;
-      message = "";
+      message = '';
       for (var host in restarted) {
         hostsCount++;
         componentsCount += restarted[host].length;
       }
-      if (hostsCount > 1) {
-        tHosts = Em.I18n.t('common.hosts');
-      } else {
-        tHosts = Em.I18n.t('common.host');
-      }
-      if (componentsCount > 1) {
-        tComponents = Em.I18n.t('common.components');
-      } else {
-        tComponents = Em.I18n.t('common.component');
-      }
+      tHosts = hostsCount > 1 ? Em.I18n.t('common.hosts') : Em.I18n.t('common.host');
+      tComponents = componentsCount > 1 ? Em.I18n.t('common.components') : Em.I18n.t('common.component');
       message += componentsCount + ' ' + tComponents + ' ' + Em.I18n.t('on') + ' ' +
         hostsCount + ' ' + tHosts + ' ' + Em.I18n.t('services.service.config.restartService.needToRestartEnd');
       this.set('restartRequiredMessage', message);
@@ -121,13 +114,14 @@ App.MainServiceMenuView = Em.CollectionView.extend({
 });
 
 App.TopNavServiceMenuView = Em.CollectionView.extend({
-  disabledServices: [],
 
   content: function () {
-    return App.router.get('mainServiceController.content').filter(function (item) {
-      return !this.get('disabledServices').contains(item.get('id'));
-    }, this);
-  }.property('App.router.mainServiceController.content', 'App.router.mainServiceController.content.length'),
+    if (!App.router.get('clusterController.isLoaded')) {
+      return [];
+    }
+    var serviceGroup = App.ServiceGroup.find('CORE');
+    return misc.sortByOrder(App.StackService.find().mapProperty('serviceName'), serviceGroup.get('services').toArray());
+  }.property('App.router.clusterController.isLoaded'),
 
   didInsertElement:function () {
     App.router.location.addObserver('lastSetURL', this, 'renderOnRoute');
@@ -145,14 +139,14 @@ App.TopNavServiceMenuView = Em.CollectionView.extend({
    *    Syncs navigation menu with requested URL
    */
   renderOnRoute:function () {
-    var last_url = App.router.location.lastSetURL || location.href.replace(/^[^#]*#/, '');
-    if (last_url.substr(1, 4) !== 'main' || !this._childViews) {
+    var lastUrl = App.router.location.lastSetURL || location.href.replace(/^[^#]*#/, '');
+    if (lastUrl.substr(1, 4) !== 'main' || !this._childViews) {
       return;
     }
     var reg = /^\/main\/services\/(\S+)\//g;
-    var sub_url = reg.exec(last_url);
-    var service_id = (null != sub_url) ? sub_url[1] : 1;
-    this.set('activeServiceId', service_id);
+    var subUrl = reg.exec(lastUrl);
+    var serviceId = null != subUrl ? subUrl[1] : 1;
+    this.set('activeServiceId', serviceId);
   },
 
   tagName:'ul',
@@ -179,8 +173,8 @@ App.TopNavServiceMenuView = Em.CollectionView.extend({
     }.property('App.services.noConfigTypes','content.serviceName'),
 
     link: function() {
-      var stateName = (['summary','configs'].contains(App.router.get('currentState.name')))
-        ? this.get('isConfigurable') ?  App.router.get('currentState.name') : 'summary'
+      var stateName = ['summary','configs'].contains(App.router.get('currentState.name'))
+        ? this.get('isConfigurable') ? App.router.get('currentState.name') : 'summary'
         : 'summary';
       return "#/main/services/" + this.get('content.id') + "/" + stateName;
     }.property('App.router.currentState.name', 'parentView.activeServiceId','isConfigurable'),
@@ -196,21 +190,13 @@ App.TopNavServiceMenuView = Em.CollectionView.extend({
       restarted = this.get('content.restartRequiredHostsAndComponents');
       componentsCount = 0;
       hostsCount = 0;
-      message = "";
+      message = '';
       for (var host in restarted) {
         hostsCount++;
         componentsCount += restarted[host].length;
       }
-      if (hostsCount > 1) {
-        tHosts = Em.I18n.t('common.hosts');
-      } else {
-        tHosts = Em.I18n.t('common.host');
-      }
-      if (componentsCount > 1) {
-        tComponents = Em.I18n.t('common.components');
-      } else {
-        tComponents = Em.I18n.t('common.component');
-      }
+      tHosts = hostsCount > 1 ? Em.I18n.t('common.hosts') : Em.I18n.t('common.host');
+      tComponents = componentsCount > 1 ? Em.I18n.t('common.components') : Em.I18n.t('common.component');
       message += componentsCount + ' ' + tComponents + ' ' + Em.I18n.t('on') + ' ' +
         hostsCount + ' ' + tHosts + ' ' + Em.I18n.t('services.service.config.restartService.needToRestartEnd');
       this.set('restartRequiredMessage', message);

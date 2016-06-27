@@ -19,6 +19,7 @@
 package org.apache.ambari.server.api.services;
 
 import org.apache.ambari.server.api.resources.ResourceInstance;
+import org.apache.ambari.server.api.util.ApiVersion;
 import org.apache.ambari.server.controller.spi.Resource;
 
 import javax.ws.rs.GET;
@@ -55,7 +56,8 @@ public class HostKerberosIdentityService extends BaseService {
    * @param clusterName cluster name
    * @param hostName    host name
    */
-  public HostKerberosIdentityService(String clusterName, String hostName) {
+  public HostKerberosIdentityService(ApiVersion apiVersion, String clusterName, String hostName) {
+    super(apiVersion);
     this.clusterName = clusterName;
     this.hostName = hostName;
   }

@@ -46,6 +46,18 @@ public interface ServiceComponentHost {
   String getServiceName();
 
   /**
+   * Get the Real Service this object maps to
+   * @return Name of the Real Service
+   */
+  String getStackServiceName();
+
+  /**
+   * Get the service group name this object maps to
+   * @return Name of the service group
+   */
+  String getServiceGroupName();
+
+  /**
    * Get the ServiceComponent this object maps to
    * @return Name of the ServiceComponent
    */

@@ -58,7 +58,7 @@
 
 {{#isAuthorized "SERVICE.RUN_CUSTOM_COMMAND, SERVICE.RUN_SERVICE_CHECK, SERVICE.START_STOP, SERVICE.TOGGLE_MAINTENANCE, SERVICE.ENABLE_HA"}}
 <div class="service-button">
-  {{#if view.isMaintenanceActive}}
+  {{#if view.isServiceActionsVisible}}
     <div class="btn-group display-inline-block">
       <a class="btn dropdown-toggle" id="service-actions-dropdown-btn" data-toggle="dropdown" href="#">
         {{t services.service.actions.serviceActions}}

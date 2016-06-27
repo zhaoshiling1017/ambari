@@ -189,6 +189,9 @@ public class Configuration {
   public static final String LDAP_GROUP_NAMING_ATTR_KEY = "authentication.ldap.groupNamingAttr";
   public static final String LDAP_GROUP_MEMEBERSHIP_ATTR_KEY = "authentication.ldap.groupMembershipAttr";
   public static final String LDAP_ADMIN_GROUP_MAPPING_RULES_KEY = "authorization.ldap.adminGroupMappingRules";
+  public static final String YARN_DASH_API_ENDPOINT = "yarn.dash.api.endpoint";
+  public static final String YARN_DASH_API_ENDPOINT_DEFAULT = "http://cn008.l42scl.hortonworks.com:9191/services/v1/applications";
+
   /**
    * When authentication through LDAP is enabled then Ambari Server uses this filter to lookup
    * the user in LDAP based on the provided ambari user name.
@@ -3029,5 +3032,9 @@ public class Configuration {
 
   public boolean isLdapAlternateUserSearchEnabled() {
     return Boolean.parseBoolean(properties.getProperty(LDAP_ALT_USER_SEARCH_ENABLED_KEY, LDAP_ALT_USER_SEARCH_ENABLED_DEFAULT));
+  }
+
+  public String getDashApiEndpoint() {
+    return properties.getProperty(YARN_DASH_API_ENDPOINT, YARN_DASH_API_ENDPOINT_DEFAULT);
   }
 }

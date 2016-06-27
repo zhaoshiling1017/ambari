@@ -97,8 +97,8 @@ App.MainServiceInfoConfigsController = Em.Controller.extend(App.ConfigsLoader, A
    * @type {string[]}
    */
   servicesToLoad: function() {
-    return [this.get('content.serviceName')].concat(this.get('dependentServiceNames')).uniq();
-  }.property('content.serviceName', 'dependentServiceNames.length'),
+    return [this.get('content.stackServiceName')].concat(this.get('dependentServiceNames')).uniq();
+  }.property('content.stackServiceName', 'dependentServiceNames.length'),
 
   /**
    * @type {boolean}
@@ -291,7 +291,7 @@ App.MainServiceInfoConfigsController = Em.Controller.extend(App.ConfigsLoader, A
    * @method loadStep
    */
   loadStep: function () {
-    var serviceName = this.get('content.serviceName');
+    var serviceName = this.get('content.stackServiceName');
     this.clearStep();
     this.set('dependentServiceNames', App.StackService.find(serviceName).get('dependentServiceNames'));
     this.loadConfigTheme(serviceName).always(this.loadCurrentVersions.bind(this));

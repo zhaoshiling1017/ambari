@@ -149,7 +149,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testHeartbeatWithConfigs() throws Exception {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -219,7 +219,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testRestartRequiredAfterInstallClient() throws Exception {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(HDFS_CLIENT).persist();
     hdfs.getServiceComponent(HDFS_CLIENT).addServiceComponentHost(DummyHostname1).persist();
@@ -285,7 +285,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testHeartbeatCustomCommandWithConfigs() throws Exception {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -370,7 +370,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testHeartbeatCustomStartStop() throws Exception {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -455,7 +455,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testStatusHeartbeat() throws Exception {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -587,7 +587,7 @@ public class HeartbeatProcessorTest {
   public void testCommandReportOnHeartbeatUpdatedState()
       throws AmbariException, InvalidStateTransitionException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -707,7 +707,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testUpgradeSpecificHandling() throws AmbariException, InvalidStateTransitionException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -802,7 +802,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testCommandStatusProcesses() throws Exception {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -884,7 +884,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testComponentUpgradeCompleteReport() throws AmbariException, InvalidStateTransitionException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -969,7 +969,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testComponentUpgradeFailReport() throws AmbariException, InvalidStateTransitionException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -1090,7 +1090,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testComponentUpgradeInProgressReport() throws AmbariException, InvalidStateTransitionException {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).addServiceComponentHost(DummyHostname1).persist();
@@ -1295,7 +1295,7 @@ public class HeartbeatProcessorTest {
   @SuppressWarnings("unchecked")
   public void testComponentInProgressStatusSafeAfterStatusReport() throws Exception {
     Cluster cluster = heartbeatTestHelper.getDummyCluster();
-    Service hdfs = cluster.addService(HDFS);
+    Service hdfs = cluster.addService(HDFS, HDFS, "CORE");
     hdfs.persist();
     hdfs.addServiceComponent(DATANODE).persist();
     hdfs.getServiceComponent(DATANODE).

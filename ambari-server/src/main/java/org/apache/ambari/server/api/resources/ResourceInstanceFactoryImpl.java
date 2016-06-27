@@ -89,6 +89,10 @@ public class ResourceInstanceFactoryImpl implements ResourceInstanceFactory {
         resourceDefinition = new ServiceResourceDefinition();
         break;
 
+      case ServiceGroup:
+        resourceDefinition = new ServiceGroupResourceDefinition();
+        break;
+
       case Host:
         resourceDefinition = mapIds.containsKey(Resource.Type.Cluster) ?
             new HostResourceDefinition() : new DetachedHostResourceDefinition();

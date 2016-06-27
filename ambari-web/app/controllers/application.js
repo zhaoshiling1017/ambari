@@ -26,14 +26,14 @@ App.ApplicationController = Em.Controller.extend(App.UserPref, {
   isPollerRunning: false,
 
   clusterName: function () {
-    return (App.router.get('clusterController.clusterName') || 'My Cluster');
+    return App.router.get('clusterController.clusterName') || 'My Cluster';
   }.property('App.router.clusterController.clusterName'),
 
   /**
    * set ambari server version from installerController or mainController, making sure version shown up all the time
    */
   ambariVersion: function () {
-    return (App.router.get('installerController.ambariServerVersion') || App.router.get('mainController.ambariServerVersion') || Em.I18n.t('common.notAvailable'));
+    return App.router.get('installerController.ambariServerVersion') || App.router.get('mainController.ambariServerVersion') || Em.I18n.t('common.notAvailable');
   }.property('App.router.installerController.ambariServerVersion', 'App.router.mainController.ambariServerVersion'),
 
   clusterDisplayName: Em.computed.truncate('clusterName', 13, 10),
@@ -61,6 +61,8 @@ App.ApplicationController = Em.Controller.extend(App.UserPref, {
     this._super();
   },
 
+  isAppStorePageSelected: Em.computed.alias('App.router.isAppStorePageSelected'),
+
   startKeepAlivePoller: function() {
     if (!this.get('isPollerRunning')) {
      this.set('isPollerRunning',true);
@@ -82,7 +84,6 @@ App.ApplicationController = Em.Controller.extend(App.UserPref, {
 
   showAboutPopup: function() {
 
-    var self = this;
     App.ModalPopup.show({
       header: Em.I18n.t('common.aboutAmbari'),
       secondary: false,

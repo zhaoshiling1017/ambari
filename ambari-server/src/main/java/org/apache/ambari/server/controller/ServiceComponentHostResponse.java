@@ -31,6 +31,8 @@ public class ServiceComponentHostResponse {
   private String componentName;
   private String displayName;
   private String hostname;
+  private String baseHostName;
+  private String containerName;
   // type -> desired config
   private Map<String, HostConfig> actualConfigs;
   private String liveState;
@@ -48,6 +50,17 @@ public class ServiceComponentHostResponse {
                                       String liveState, String stackVersion,
                                       String desiredState, String desiredStackVersion,
                                       HostComponentAdminState adminState) {
+
+    this(clusterName, serviceName, componentName, displayName, hostname,
+        liveState, stackVersion, desiredState, desiredStackVersion, adminState, null, null);
+  }
+
+  public ServiceComponentHostResponse(String clusterName, String serviceName,
+                                      String componentName, String displayName, String hostname,
+                                      String liveState, String stackVersion,
+                                      String desiredState, String desiredStackVersion,
+                                      HostComponentAdminState adminState,
+                                      String bareHostName, String containerName) {
     this.clusterName = clusterName;
     this.serviceName = serviceName;
     this.componentName = componentName;
@@ -60,11 +73,13 @@ public class ServiceComponentHostResponse {
     if (adminState != null) {
       this.adminState = adminState.name();
     }
+    this.baseHostName = bareHostName;
+    this.containerName = containerName;
   }
 
-  /**
-   * @return the serviceName
-   */
+    /**
+     * @return the serviceName
+     */
   public String getServiceName() {
     return serviceName;
   }
@@ -96,6 +111,35 @@ public class ServiceComponentHostResponse {
   public String getDisplayName() {
     return displayName;
   }
+
+  /**
+   * @return the bare-metal hostname
+   */
+  public String getBareHostName() {
+    return baseHostName;
+  }
+
+  /**
+   * @param baseHostName the bare-metal hostname to set
+   */
+  public void setBareHostName(String baseHostName) {
+    this.baseHostName = baseHostName;
+  }
+
+  /**
+   * @return the container name
+   */
+  public String getContainerName() {
+    return containerName;
+  }
+
+  /**
+   * @param containerName the container name to set
+   */
+  public void setContainerName(String containerName) {
+    this.containerName = containerName;
+  }
+
 
   /**
    * @return the hostname

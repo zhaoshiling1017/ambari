@@ -30,6 +30,7 @@ import org.apache.ambari.server.agent.ExecutionCommand;
 import org.apache.ambari.server.api.services.AmbariMetaInfo;
 import org.apache.ambari.server.controller.internal.RequestStageContainer;
 import org.apache.ambari.server.controller.metrics.timeline.cache.TimelineMetricCacheProvider;
+import org.apache.ambari.server.controller.servicegroup.cache.ServiceGroupCacheProvider;
 import org.apache.ambari.server.metadata.RoleCommandOrder;
 import org.apache.ambari.server.scheduler.ExecutionScheduleManager;
 import org.apache.ambari.server.security.authorization.AuthorizationException;
@@ -48,6 +49,8 @@ import org.apache.ambari.server.state.ServiceComponent;
 import org.apache.ambari.server.state.ServiceComponentFactory;
 import org.apache.ambari.server.state.ServiceComponentHost;
 import org.apache.ambari.server.state.ServiceFactory;
+import org.apache.ambari.server.state.ServiceGroup;
+import org.apache.ambari.server.state.ServiceGroupFactory;
 import org.apache.ambari.server.state.ServiceInfo;
 import org.apache.ambari.server.state.ServiceOsSpecific;
 import org.apache.ambari.server.state.State;
@@ -506,6 +509,13 @@ public interface AmbariManagementController {
   ServiceFactory getServiceFactory();
 
   /**
+   * Get the service groups factory for this management controller.
+   *
+   * @return the service factory
+   */
+  ServiceGroupFactory getServiceGroupFactory();
+
+  /**
    * Get the service component factory for this management controller.
    *
    * @return the service component factory
@@ -599,6 +609,24 @@ public interface AmbariManagementController {
                              Map<String, Map<State, List<ServiceComponentHost>>> changedHosts,
                              Collection<ServiceComponentHost> ignoredHosts,
                              boolean runSmokeTest, boolean reconfigureClients) throws AmbariException;
+
+
+  /**
+   * Add stages for a service group to the request.
+   *
+   * @param requestStages       Stages currently associated with request
+   * @param cluster             cluster being acted on
+   * @param requestProperties   the request properties
+   * @param requestParameters   the request parameters; may be null
+   * @param changedServiceGroups     the service groups being changed
+   *
+   * @return request stages
+   *
+   * @throws AmbariException if stages can't be created
+   */
+  RequestStageContainer addServiceGroupStages(RequestStageContainer requestStages, Cluster cluster, Map<String, String> requestProperties,
+                                  Map<String, String> requestParameters,
+                                  Map<State, List<ServiceGroup>> changedServiceGroups) throws AmbariException;
 
   /**
    * Getter for the url of JDK, stored at server resources folder
@@ -708,6 +736,8 @@ public interface AmbariManagementController {
    */
   RoleCommandOrder getRoleCommandOrder(Cluster cluster);
 
+  String getDashApiEndpoint();
+
   /**
    * Performs a test if LDAP server is reachable.
    *
@@ -795,6 +825,8 @@ public interface AmbariManagementController {
   Set<StackConfigurationDependencyResponse> getStackConfigurationDependencies(Set<StackConfigurationDependencyRequest> requests) throws AmbariException;
 
   TimelineMetricCacheProvider getTimelineMetricCacheProvider();
+
+  public ServiceGroupCacheProvider getServiceGroupCacheProvider();
 
   /**
    * Returns KerberosHelper instance

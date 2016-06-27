@@ -372,7 +372,7 @@ public class AmbariManagementControllerImplTest {
 
     expect(service.getName()).andReturn("service");
     expect(service.getServiceComponent("component")).andThrow(
-      new ServiceComponentNotFoundException("cluster", "service", "component"));
+      new ServiceComponentNotFoundException("cluster", "service", "service", "CORE", "component"));
     expect(service.getDesiredStackVersion()).andReturn(stackId);
     expect(stackId.getStackName()).andReturn("stack");
     expect(stackId.getStackVersion()).andReturn("1.0");
@@ -1504,7 +1504,7 @@ public class AmbariManagementControllerImplTest {
     expect(ambariMetaInfo.getComponentToService("stackName", "stackVersion", "component2")).andReturn("service2");
     expect(cluster.getService("service2")).andReturn(service2);
     expect(service2.getServiceComponent("component2")).
-        andThrow(new ServiceComponentNotFoundException("cluster1", "service2", "component2"));
+        andThrow(new ServiceComponentNotFoundException("cluster1", "service2", "service2", "CORE", "component2"));
 
     expect(ambariMetaInfo.getComponentToService("stackName", "stackVersion", "component3")).andReturn("service1");
     expect(cluster.getService("service1")).andReturn(service);

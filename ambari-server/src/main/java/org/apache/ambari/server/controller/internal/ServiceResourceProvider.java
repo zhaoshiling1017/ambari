@@ -89,6 +89,8 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
   // Services
   public static final String SERVICE_CLUSTER_NAME_PROPERTY_ID    = PropertyHelper.getPropertyId("ServiceInfo", "cluster_name");
   public static final String SERVICE_SERVICE_NAME_PROPERTY_ID    = PropertyHelper.getPropertyId("ServiceInfo", "service_name");
+  public static final String SERVICE_STACK_SERVICE_NAME_PROPERTY_ID    = PropertyHelper.getPropertyId("ServiceInfo", "stack_service_name");
+  public static final String SERVICE_SERVICE_GROUP_NAME_PROPERTY_ID    = PropertyHelper.getPropertyId("ServiceInfo", "service_group_name");
   public static final String SERVICE_SERVICE_STATE_PROPERTY_ID   = PropertyHelper.getPropertyId("ServiceInfo", "state");
   public static final String SERVICE_MAINTENANCE_STATE_PROPERTY_ID = PropertyHelper.getPropertyId("ServiceInfo", "maintenance_state");
 
@@ -108,7 +110,6 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
       new HashSet<String>(Arrays.asList(new String[]{
           SERVICE_CLUSTER_NAME_PROPERTY_ID,
           SERVICE_SERVICE_NAME_PROPERTY_ID}));
-
 
   private MaintenanceStateHelper maintenanceStateHelper;
 
@@ -192,6 +193,10 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
           response.getClusterName(), requestedIds);
       setResourceProperty(resource, SERVICE_SERVICE_NAME_PROPERTY_ID,
           response.getServiceName(), requestedIds);
+      setResourceProperty(resource, SERVICE_STACK_SERVICE_NAME_PROPERTY_ID,
+          response.getStackServiceName(), requestedIds);
+      setResourceProperty(resource, SERVICE_SERVICE_GROUP_NAME_PROPERTY_ID,
+          response.getServiceGroupName(), requestedIds);
       setResourceProperty(resource, SERVICE_SERVICE_STATE_PROPERTY_ID,
           calculateServiceState(response.getClusterName(), response.getServiceName()),
           requestedIds);
@@ -199,7 +204,7 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
           response.getMaintenanceState(), requestedIds);
 
       Map<String, Object> serviceSpecificProperties = getServiceSpecificProperties(
-          response.getClusterName(), response.getServiceName(), requestedIds);
+          response.getClusterName(), response.getServiceName(), response.getStackServiceName(), requestedIds);
 
       for (Map.Entry<String, Object> entry : serviceSpecificProperties.entrySet()) {
         setResourceProperty(resource, entry.getKey(), entry.getValue(), requestedIds);
@@ -322,6 +327,8 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
     ServiceRequest svcRequest = new ServiceRequest(
         (String) properties.get(SERVICE_CLUSTER_NAME_PROPERTY_ID),
         (String) properties.get(SERVICE_SERVICE_NAME_PROPERTY_ID),
+        (String) properties.get(SERVICE_STACK_SERVICE_NAME_PROPERTY_ID),
+        (String) properties.get(SERVICE_SERVICE_GROUP_NAME_PROPERTY_ID),
         (String) properties.get(SERVICE_SERVICE_STATE_PROPERTY_ID));
 
     Object o = properties.get(SERVICE_MAINTENANCE_STATE_PROPERTY_ID);
@@ -341,6 +348,14 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
       return;
     }
     Clusters clusters = getManagementController().getClusters();
+    for(ServiceRequest request: requests) {
+      if(StringUtils.isBlank(request.getStackServiceName())) {
+        request.setStackServiceName(request.getServiceName());
+      }
+      if(StringUtils.isBlank(request.getServiceGroupName())) {
+        request.setServiceGroupName("CORE");
+      }
+    }
     // do all validation checks
     validateCreateRequests(requests, clusters);
 
@@ -351,7 +366,8 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
       State state = State.INIT;
 
       // Already checked that service does not exist
-      Service s = serviceFactory.createNew(cluster, request.getServiceName());
+      Service s = serviceFactory.createNew(
+          cluster, request.getServiceName(), request.getStackServiceName(), request.getServiceGroupName());
 
       s.setDesiredState(state);
       s.setDesiredStackVersion(cluster.getDesiredStackVersion());
@@ -848,9 +864,10 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
    * @param serviceName  service name
    * @param requestedIds relevant request property ids
    */
-  private Map<String, Object> getServiceSpecificProperties(String clusterName, String serviceName, Set<String> requestedIds) {
+  private Map<String, Object> getServiceSpecificProperties(String clusterName, String serviceName,
+                                                           String stackServiceName, Set<String> requestedIds) {
     Map<String, Object> serviceSpecificProperties = new HashMap<String, Object>();
-    if (serviceName.equals("KERBEROS")) {
+    if (stackServiceName.equals("KERBEROS")) {
       // Only include details on whether the KDC administrator credentials are set and correct if
       // implicitly (Service/attributes) or explicitly (Service/attributes/kdc_...) queried
       if (requestedIds.contains(SERVICE_ATTRIBUTES_PROPERTY_ID) ||
@@ -895,15 +912,22 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
     for (ServiceRequest request : requests) {
       final String clusterName = request.getClusterName();
       final String serviceName = request.getServiceName();
+      final String stackServiceName = request.getStackServiceName();
+      final String serviceGroupName = request.getServiceGroupName();
+
       Validate.notEmpty(clusterName, "Cluster name should be provided when creating a service");
       Validate.notEmpty(serviceName, "Service name should be provided when creating a service");
+      Validate.notEmpty(stackServiceName, "Stack service name should be provided when creating a service");
+      Validate.notEmpty(serviceGroupName, "Service group name should be provided when creating a service");
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received a createService request"
-                + ", clusterName=" + clusterName + ", serviceName=" + serviceName + ", request=" + request);
+            + ", clusterName=" + clusterName + ", serviceName=" + serviceName + ", stackServiceName=" + stackServiceName
+            + ", serviceGroupName=" + serviceGroupName + ", request=" + request);
       }
 
-      if(!AuthorizationHelper.isAuthorized(ResourceType.CLUSTER, getClusterResourceId(clusterName), RoleAuthorization.SERVICE_ADD_DELETE_SERVICES)) {
+      if(!AuthorizationHelper.isAuthorized(ResourceType.CLUSTER,
+          getClusterResourceId(clusterName), RoleAuthorization.SERVICE_ADD_DELETE_SERVICES)) {
         throw new AuthorizationException("The user is not authorized to create services");
       }
 
@@ -946,7 +970,7 @@ public class ServiceResourceProvider extends AbstractControllerResourceProvider 
 
       StackId stackId = cluster.getDesiredStackVersion();
       if (!ambariMetaInfo.isValidService(stackId.getStackName(),
-              stackId.getStackVersion(), request.getServiceName())) {
+              stackId.getStackVersion(), request.getStackServiceName())) {
         throw new IllegalArgumentException("Unsupported or invalid service in stack, clusterName=" + clusterName
                 + ", serviceName=" + serviceName + ", stackInfo=" + stackId.getStackId());
       }
