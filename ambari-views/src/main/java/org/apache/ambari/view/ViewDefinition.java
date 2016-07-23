@@ -79,6 +79,14 @@ public interface ViewDefinition {
    */
   public String getStatusDetail();
 
+  /**
+   * Get the service name that may correspond to this view.
+   *
+   * @return the service name
+   */
+  public String getServiceName();
+
+
 
   // ----- ViewStatus enum ---------------------------------------------------
 

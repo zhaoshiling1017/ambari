@@ -116,20 +116,20 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
     index: Em.Route.extend({
       route: '/',
       enter: function (router) {
-        Em.run.next(function () {
-          router.transitionTo('main.dashboard.widgets');
-        });
+          Em.run.next(function () {
+              router.transitionTo('main.dashboard.widgets');
+          });
       }
     }),
     goToDashboardView: function (router, event) {
-      router.transitionTo(event.context);
+        router.transitionTo(event.context);
     },
     widgets: Em.Route.extend({
       route: '/metrics',
       connectOutlets: function (router, context) {
-        App.loadTimer.start('Dashboard Metrics Page');
-        router.set('mainDashboardController.selectedCategory', 'widgets');
-        router.get('mainDashboardController').connectOutlet('mainDashboardWidgets');
+          App.loadTimer.start('Dashboard Metrics Page');
+          router.set('mainDashboardController.selectedCategory', 'widgets');
+          router.get('mainDashboardController').connectOutlet('mainDashboardWidgets');
       }
     }),
     charts: Em.Route.extend({
@@ -142,23 +142,23 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
       index: Ember.Route.extend({
         route: '/',
         enter: function (router) {
-          Em.run.next(function () {
-            router.transitionTo('heatmap');
-          });
+            Em.run.next(function () {
+                router.transitionTo('heatmap');
+            });
         }
       }),
       heatmap: Em.Route.extend({
         route: '/heatmap',
         connectOutlets: function (router, context) {
-          router.get('mainController').dataLoading().done(function () {
-            router.get('mainChartsController').connectOutlet('mainChartsHeatmap');
-          });
+            router.get('mainController').dataLoading().done(function () {
+                router.get('mainChartsController').connectOutlet('mainChartsHeatmap');
+            });
         }
       }),
       horizon_chart: Em.Route.extend({
         route: '/horizon_chart',
         connectOutlets: function (router, context) {
-          router.get('mainChartsController').connectOutlet('mainChartsHorizon');
+            router.get('mainChartsController').connectOutlet('mainChartsHorizon');
         }
       }),
       showChart: function (router, event) {
@@ -181,7 +181,7 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
       router.get('mainServiceInfoConfigsController').set('preSelectedConfigVersion', event.context);
       router.transitionTo('main.services.service.configs', App.Service.find(event.context.get('serviceName')));
       router.get('mainServiceItemController').set('routeToConfigs', false);
-    }
+    },
   }),
 
   views: require('routes/views'),
@@ -524,7 +524,7 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
         route: '/history',
         connectOutlets: function (router, context) {
           router.get('mainAdminStackAndUpgradeController').connectOutlet('mainAdminStackUpgradeHistory');
-        },
+        }
       }),
 
       stackNavigate: function (router, event) {
@@ -701,6 +701,57 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
           router.get('mainServiceItemController').connectOutlet('mainServiceInfoMetrics', item);
         }
       }),
+
+      views: require('routes/views'),
+      menuViews: Em.Route.extend({
+        route: '/:view_instance_id',
+        connectOutlets: function (router, context) {
+          // find and set content for `mainViewsDetails` and associated controller
+          var serviceName = App.router.get('mainServiceItemController.content.serviceName');
+          var instanceName = context.get('instanceName');
+          var viewName = context.get('viewName');
+          var version = context.get('version');
+          var href = ['/views', viewName, version, instanceName + "/"].join('/');
+          var viewPath = this.parseViewPath(window.location.href.slice(window.location.href.indexOf('?')));
+          if (viewPath) {
+            var slicedInstanceName = this._getSlicedInstanceName(instanceName);
+            if (slicedInstanceName === instanceName) {
+              viewPath = '';
+            }
+            href = ['/views', viewName, version, slicedInstanceName + "/"].join('/');
+            //remove slash from viewPath since href already contains it at the end
+            if (viewPath.charAt(0) === '/') viewPath = viewPath.slice(1);
+          }
+          router.get('mainViewsController').dataLoading().done(function () {
+            var content = App.router.get('mainViewsController.ambariViews').findProperty('href', href);
+            if (content) content.set('viewPath', viewPath);
+            router.get('mainServiceItemController').connectOutlet('mainViewsDetails', content);
+          });
+        },
+        /**
+         * parse the instance name and slice if needed
+         *
+         * @returns {string}
+         * @private
+         */
+        _getSlicedInstanceName: function (instanceName) {
+            if (instanceName.lastIndexOf('?') > -1) {
+                return instanceName.slice(0, instanceName.lastIndexOf('?'));
+            }
+
+            return instanceName;
+        },
+        parseViewPath: function (instanceName) {
+            var path = '';
+            if (instanceName.contains('?')) {
+                path = instanceName.slice(instanceName.indexOf('?'));
+                if (path.contains('viewPath')) {
+                    path = decodeURIComponent(path.slice((path.lastIndexOf('?viewPath=') + 10))).replace('&', '?');
+                }
+            }
+            return path;
+        }
+      }),
       configs: Em.Route.extend({
         route: '/configs',
         connectOutlets: function (router, context) {
@@ -755,7 +806,14 @@ module.exports = Em.Route.extend(App.RouterRedirections, {
         }
       }),
       showInfo: function (router, event) {
-        router.transitionTo(event.context);
+        var viewInstance = event.context.item;
+        if (viewInstance) {
+          var serviceName = viewInstance.get('serviceName');
+          App.router.route('/main/services/' + viewInstance.get('serviceName') + '/' + viewInstance.get('id'));
+        } else {
+          router.transitionTo(event.context.routing);  
+        }
+        
       }
     }),
     showService: Em.Router.transitionTo('service'),

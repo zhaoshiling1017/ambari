@@ -26,7 +26,9 @@ App.MainServiceInfoMenuView = Em.CollectionView.extend({
       {
         label: Em.I18n.t('services.service.info.menu.summary'),
         id: 'summary-service-tab',
-        routing: 'summary',
+        route: {
+          routing: 'summary'
+        },
         active: "active"
       }
     ];
@@ -35,16 +37,32 @@ App.MainServiceInfoMenuView = Em.CollectionView.extend({
       menuItems.push({
         label: Em.I18n.t('services.service.info.menu.heatmaps'),
         id: 'heatmap-service-tab',
-        routing: 'heatmaps'
+        route: {
+          routing: 'heatmaps'
+        }
       });
     }
     if (this.get('configTab')) {
       menuItems.push({
         label: Em.I18n.t('services.service.info.menu.configs'),
         id: 'configs-service-tab',
-        routing: 'configs'
+        route: {
+          routing: 'configs'
+        }
       });
     }
+
+    var serviceName = this.get('parentView.service.serviceName');
+    App.ViewInstance.find().filterProperty('serviceName', serviceName).filterProperty('layoutName', 'service-tab').forEach(function(item){
+      menuItems.push({
+        label: item.get('displayName'),
+        id: item.get('id'),
+        route: {
+          routing: 'menuViews',
+          item: item
+        }
+      })
+    });
     return menuItems;
   }.property(),
 
@@ -55,7 +73,12 @@ App.MainServiceInfoMenuView = Em.CollectionView.extend({
 
   activateView: function () {
     this.get('_childViews').forEach(function(view) {
-      view.set('active', (document.URL.endsWith(view.get('content.routing')) ? "active" : ""));
+      if(document.URL.endsWith(view.get('content.route.routing'))){
+        view.set('active', (document.URL.endsWith(view.get('content.route.routing')) ? "active" : ""));
+      }
+      else {
+        view.set('active', (document.URL.endsWith(view.get('content.id')) ? "active" : ""));
+      }
     }, this);
   }.observes('App.router.location.lastSetURL'),
 
@@ -66,6 +89,6 @@ App.MainServiceInfoMenuView = Em.CollectionView.extend({
   itemViewClass: Em.View.extend({
     classNameBindings: ["active"],
     active: "",
-    template: Ember.Handlebars.compile('<a {{action showInfo view.content.routing}} {{bindAttr id="view.content.id"}} href="#"> {{unbound view.content.label}}</a>')
+    template: Ember.Handlebars.compile('<a {{action showInfo view.content.route}} {{bindAttr id="view.content.id"}} href="#"> {{unbound view.content.label}}</a>')
   })
 });

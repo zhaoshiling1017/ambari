@@ -72,7 +72,14 @@ describe('App.MainServiceInfoMenuView', function () {
   describe("#activateView()", function() {
     it("_childViews should be active", function() {
       view.set('_childViews', [
-        Em.Object.create({active: '', content: {routing: 'login'}})
+        Em.Object.create({
+          active: '',
+          content: {
+            route: {
+              routing: 'login'
+            }
+          }
+        })
       ]);
       view.activateView();
       expect(view.get('_childViews')[0].get('active')).to.equal('active');

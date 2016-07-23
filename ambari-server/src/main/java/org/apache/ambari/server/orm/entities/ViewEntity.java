@@ -894,4 +894,27 @@ public class ViewEntity implements ViewDefinition {
   public static String getViewName(String name, String version) {
     return name + "{" + version + "}";
   }
+
+  public String getServiceName() {
+    // Try
+    switch (this.getCommonName()) {
+        case "FILES":
+            return "HDFS";
+        case "HIVE":
+            return "HIVE";
+        case "CAPACITY_SCHEDULER":
+            return "YARN";
+        case "ADMIN_VIEW":
+            return null;
+        case "PIG":
+            return "PIG";
+        case "SLIDER":
+            return "SLIDER";
+        case "TEZ":
+            return "TEZ";
+        default:
+            return "Unknown";
+    }
+
+  }
 }

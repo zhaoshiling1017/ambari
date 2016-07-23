@@ -48,6 +48,11 @@ public class ViewResourceProvider extends AbstractAuthorizedResourceProvider {
    */
   public static final String VIEW_NAME_PROPERTY_ID    = "ViewInfo/view_name";
 
+  /**
+   * Service that a view supports in order to show for that Service's quicklinks.
+   */
+  public static final String VIEW_SERVICE = "ViewInfo/service_name";
+
 
   /**
    * The key property ids for a view resource.
@@ -63,6 +68,7 @@ public class ViewResourceProvider extends AbstractAuthorizedResourceProvider {
   private static Set<String> propertyIds = new HashSet<String>();
   static {
     propertyIds.add(VIEW_NAME_PROPERTY_ID);
+    propertyIds.add(VIEW_SERVICE);
   }
 
 
@@ -113,6 +119,11 @@ public class ViewResourceProvider extends AbstractAuthorizedResourceProvider {
             Resource resource = new ResourceImpl(Resource.Type.View);
 
             setResourceProperty(resource, VIEW_NAME_PROPERTY_ID, viewDefinition.getCommonName(), requestedIds);
+            // Value will eventually come from an xml file that belongs to the view.
+            // Some views, like the Admin, does not belong to a Service.
+            // E.g., viewDefinition.getServiceName();
+            // For now, just hardcode using a map.
+            setResourceProperty(resource, VIEW_SERVICE, viewDefinition.getServiceName(), requestedIds);
 
             resources.add(resource);
           }

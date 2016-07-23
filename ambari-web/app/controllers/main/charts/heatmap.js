@@ -63,7 +63,6 @@ App.MainChartsHeatmapController = Em.Controller.extend(App.WidgetSectionMixin, {
    */
   activeWidget: Em.computed.alias('widgets.firstObject'),
 
-
   /**
    * This function is called from the bound view of the controller
    */

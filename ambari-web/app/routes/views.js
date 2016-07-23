@@ -17,7 +17,7 @@
  */
 
 var App = require('app');
-
+require('views/main/views_view');
 module.exports = Em.Route.extend({
   route: '/views',
   enter: function (router) {
